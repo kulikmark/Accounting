@@ -7,11 +7,17 @@
 
 import UIKit
 import SnapKit
+import Photos
 
 // MARK: - StudentDetailDelegate
 
-protocol StudentDelegate: AnyObject {
-    func didCreateStudent(_ newStudent: Student, withImage: UIImage?)
+protocol StudentCardDelegate: AnyObject {
+    func didCreateStudent(_ existingStudent: Student, withImage: UIImage?)
+}
+
+enum EditMode {
+    case add
+    case edit
 }
 
 // MARK: - StudentDetailViewController
@@ -20,194 +26,197 @@ class StudentCardViewController: UIViewController {
     
     // MARK: - Properties
     
-    weak var delegate: StudentDelegate?
+    weak var delegate: StudentCardDelegate?
     
     var student: Student?
-    var students = [Student]() // Массив объектов типа Student
+//    var students = [Student]() // Массив объектов типа Student
     
     var paidMonths = [PaidMonth]()
-    var schedules = [Schedule]()
+//    var schedules = [Schedule]()
+    var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
     
     let studentNameTextField = UITextField()
+    let studentNameLabel = UILabel()
     let phoneTextField = UITextField()
+    let phoneLabel = UILabel()
     let scheduleTextField = UITextField()
-    let paidMonthsLabel = UILabel()
-    let paidMonthsTableView = UITableView()
+    let scheduleLabel = UILabel()
     
-    let imageButton = UIButton(type: .system)
-    let addPaidMonthButton = UIButton(type: .system)
+    var imageButton = UIButton(type: .system)
     
     let imagePicker = UIImagePickerController()
     
-    var selectedSchedules = [(weekday: String, time: String)]()
+//    var lessonsForStudent: [String: [Lesson]] = [:]
     
-    var lessonsForNewStudent: [String: [Lesson]] = [:]
-    
-//    // Добавим новое свойство для хранения расписания
-//       var schedule: [String] {
-//           var scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
-//           scheduleStrings.sort() // Сортируем расписание по дням недели и времени
-//           return scheduleStrings
-//       }
+    var editMode: EditMode // Добавляем свойство для хранения текущего режима
     
     
     // MARK: - View Lifecycle
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        paidMonthsTableView.separatorStyle = .singleLine
-        paidMonthsTableView.separatorColor = UIColor.lightGray // Установите желаемый цвет разделителя
-        paidMonthsTableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        
-        // Выполните операции с UITableView здесь
-        paidMonthsTableView.reloadData()
-        
-        print("Массив уроков на экране StudentAddingViewController с экрана MonthLessonsViewController после его закрытия \(String(describing: lessonsForNewStudent))")
-        
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        printCurrentEditMode()
         setupUI()
-        updateUI()
+        // Добавляем вызов метода updateScheduleTextField() для обновления расписания при открытии в режиме редактирования
+            updateScheduleTextField()
         
         view.backgroundColor = .white
         
-        let saveButton = UIBarButtonItem(title: "Сохранить", style: .plain, target: self, action: #selector(saveButtonTapped))
+//        self.navigationController?.navigationBar.topItem?.title = "Назад"
+        
+        let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
         
-        paidMonthsTableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
-        
-       
     }
+    
+    init(editMode: EditMode, delegate: StudentCardDelegate?) {
+           self.editMode = editMode
+           super.init(nibName: nil, bundle: nil)
+           self.delegate = delegate
+       }
+       
+       required init?(coder: NSCoder) {
+           fatalError("init(coder:) has not been implemented")
+       }
+    
+    // Отладочный метод для вывода текущего режима
+        func printCurrentEditMode() {
+            switch editMode {
+            case .add:
+                print("Текущий режим: Добавление ученика")
+            case .edit:
+                print("Текущий режим: Редактирование ученика")
+            }
+        }
+
     
     // MARK: - Actions
     
     @objc private func saveButtonTapped() {
-        
-        // Обновляем состояние isPaid в массиве paidMonths на основе текущего состояния UISwitch
-        for (index, cell) in paidMonthsTableView.visibleCells.enumerated() {
-            if let paidMonthCell = cell as? PaidMonthCell {
-                paidMonths[index].isPaid = paidMonthCell.switchControl.isOn
-            }
+        if let existingStudent = student {
+            saveStudent(existingStudent, mode: .edit)
+        } else {
+            saveStudent(nil, mode: .add)
         }
         
-        // Получаем значения из текстовых полей, если они есть, или передаем nil
-        let studentName = studentNameTextField.text ?? ""
-        let phoneNumber = phoneTextField.text ?? ""
-        // Создаем массив расписаний на основе выбранных дней и времени
-        
-        for selectedSchedule in selectedSchedules {
-            let schedule = Schedule(weekday: selectedSchedule.weekday, time: selectedSchedule.time)
-            schedules.append(schedule)
-        }
-        
-        let lessons = lessonsForNewStudent
-        
-        // Создаем нового ученика с переданными данными и изображением
-        let newStudent = Student(name: studentName, phoneNumber: phoneNumber, paidMonths: paidMonths, lessons: lessons, schedule: schedules, image: selectedImage)
-        
-        print("Новый студент:")
-        print("Имя: \(newStudent.name)")
-        print("Номер телефона: \(newStudent.phoneNumber)")
-        print("Количество уроков: \(newStudent.lessons.count) \(newStudent.lessons)")
-
-        
-        // Передаем нового ученика и выбранное изображение через делегата обратно в контроллер списка учеников
-        delegate?.didCreateStudent(newStudent, withImage: selectedImage)
-        
-        
-//        print("Уроки lessonsForNewStudent после сохранить \(lessonsForNewStudent)")
-        
-//        printLessonsForNewStudent()
-      
-        // Возвращаемся на предыдущий экран
         navigationController?.popViewController(animated: true)
     }
-    
-//    func printLessonsForNewStudent() {
-//        print("Уроки для нового студента:")
-//        for (index, lesson) in lessonsForNewStudent.enumerated() {
-//            print("\(index + 1). \(lesson.date) - \(lesson.attended ? "Присутствовал" : "Отсутствовал")")
-//        }
-//    }
-    
+
+    private func saveStudent(_ existingStudent: Student?, mode: EditMode) {
+        // Determine student ID, using existing ID if available, otherwise generate a new UUID
+        let studentID = existingStudent?.id ?? UUID()
+        
+        // Extract student name from text field, defaulting to an empty string if text field is empty
+        let studentName = studentNameTextField.text ?? ""
+        
+        // Extract phone number from text field, defaulting to an empty string if text field is empty
+        let phoneNumber = phoneTextField.text ?? ""
+        
+        // Use selectedSchedules only in 'add' mode
+        var updatedSchedule: [Schedule] = mode == .add ? selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) } : existingStudent?.schedule ?? []
+        
+        // Add selected schedules to the existing schedule only in 'edit' mode
+        if mode == .edit {
+            updatedSchedule += selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) }
+        }
+        
+        // Create an updated student object with the gathered information
+        let updatedStudent = Student(
+            id: studentID,
+            name: studentName,
+            phoneNumber: phoneNumber,
+            paidMonths: paidMonths,
+            lessons: [:],
+            schedule: updatedSchedule,
+            image: selectedImage ?? existingStudent?.imageForCell
+        )
+        
+        // Notify the delegate about the creation or update of the student, passing the updated student and selected image if available
+        delegate?.didCreateStudent(updatedStudent, withImage: selectedImage)
+    }
+
     @objc func selectImage() {
         imagePicker.delegate = self
+        
+        // Check if photo library is available
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            imagePicker.sourceType = .photoLibrary
-            present(imagePicker, animated: true, completion: nil)
-            imageButton.setImage(selectedImage?.withRenderingMode(.alwaysOriginal), for: .normal)
+            let status = PHPhotoLibrary.authorizationStatus()
+            switch status {
+            case .authorized:
+                // Access to photo library is authorized, open it
+                openPhotoLibrary()
+            case .notDetermined, .denied, .restricted:
+                // User hasn't decided yet, request access
+                requestPhotoLibraryAccess()
+            case .limited:
+                // User has limited access
+                showLimitedAccessAlert()
+            @unknown default:
+                break
+            }
         } else {
-            // Обработка ситуации, когда фотогалерея недоступна
-            print("Фотогалерея недоступна")
+            // Photo library is not available, show error message
+            showGalleryUnavailableAlert()
         }
     }
-    
-    @objc func addPaidMonthButtonTapped() {
-        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
-        alertController.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-        
-        for month in ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"] {
-            alertController.addAction(UIAlertAction(title: month, style: .default, handler: { [weak self] _ in
-                self?.addPaidMonth(month)
-            }))
-        }
-        
-        present(alertController, animated: true)
+
+    func openPhotoLibrary() {
+        // Open the photo library
+        imagePicker.sourceType = .photoLibrary
+        present(imagePicker, animated: true, completion: nil)
     }
-    
-    
-    // MARK: - Helper Methods
-    
-//    func addPaidMonth(_ month: String) {
-//        
-//        print("Adding month: \(month)")
-//        let paidMonth = PaidMonth(month: month, isPaid: false) // По умолчанию месяц не оплачен
-//        paidMonths.append(paidMonth)
-//        
-//        print("Месяц добавился в массив\(paidMonths)")
-//        
-//        // Вставляем новую строку в таблицу
-//        let indexPath = IndexPath(row: paidMonths.count - 1, section: 0)
-//        paidMonthsTableView.insertRows(at: [indexPath], with: .automatic)
-//        
-//        // Обновляем количество строк в секции
-//        let sectionIndex = 0
-//        let numberOfSections = paidMonthsTableView.numberOfSections
-//        if numberOfSections > sectionIndex {
-//            let numberOfRows = paidMonthsTableView.numberOfRows(inSection: sectionIndex)
-//            if numberOfRows == 0 {
-//                paidMonthsTableView.reloadData()
-//            }
-//        }
-//        updateUI()
-//    }
-    
-    func addPaidMonth(_ month: String) {
-        print("Adding month: \(month)")
-        let paidMonth = PaidMonth(month: month, isPaid: false)
-        paidMonths.append(paidMonth)
 
-        print("Месяц добавился в массив\(paidMonths)")
-
-        // Проверяем, есть ли уроки для этого месяца в словаре lessonsForNewStudent
-        if lessonsForNewStudent[month] == nil {
-            // Если уроки для этого месяца еще не созданы, добавляем пустой массив уроков
-            lessonsForNewStudent[month] = []
+    func requestPhotoLibraryAccess() {
+        // Request access to the photo library
+        PHPhotoLibrary.requestAuthorization { [weak self] status in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if status == .authorized {
+                    // User granted access, open the photo library
+                    self.openPhotoLibrary()
+                } else {
+                    // User denied access or access is restricted
+                    self.showPermissionDeniedAlert()
+                }
+            }
         }
-
-        // Вставляем новую строку в таблицу и обновляем UI
-        let indexPath = IndexPath(row: paidMonths.count - 1, section: 0)
-        paidMonthsTableView.insertRows(at: [indexPath], with: .automatic)
-        updateUI()
     }
-    
-    func updateUI() {
-        paidMonthsTableView.reloadData()
+
+    func showPermissionDeniedAlert() {
+        // Show alert when access to photo library is denied
+        let alert = UIAlertController(title: "Access to Photo Library Denied", message: "You can enable access to the photo library in your device settings", preferredStyle: .alert)
+        let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+            if let appSettings = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
+            }
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(settingsAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    func showLimitedAccessAlert() {
+        // Show alert when access to photo library is limited
+        let alert = UIAlertController(title: "Limited Access to Photo Library", message: "You can request additional permissions or grant access to specific resources in your device settings", preferredStyle: .alert)
+        let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+            if let appSettings = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
+            }
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(settingsAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    func showGalleryUnavailableAlert() {
+        // Show alert when photo library is unavailable
+        let alert = UIAlertController(title: "Error", message: "Photo Library is unavailable", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
 }
 
@@ -224,204 +233,95 @@ extension StudentCardViewController {
         imageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.centerX.equalToSuperview()
-            make.width.height.equalTo(250)
+            make.width.height.equalTo(200)
         }
-        imageButton.setTitle("Добавить фото", for: .normal)
+        imageButton.setTitle("Adding photo", for: .normal)
         imageButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
         imageButton.addTarget(self, action: #selector(selectImage), for: .touchUpInside)
-        imageButton.layer.cornerRadius = 125
+        imageButton.layer.cornerRadius = 100
         imageButton.layer.borderWidth = 1
-        imageButton.layer.borderColor = UIColor.blue.cgColor
+        imageButton.layer.borderColor = UIColor.systemBlue.cgColor
         imageButton.clipsToBounds = true
-        //        imageButton.contentMode = .center
         
-        // Student Name
+        switch (selectedImage, student?.imageForCell) {
+        case (let selectedImageName?, _):
+            imageButton.setImage(selectedImageName.withRenderingMode(.alwaysOriginal), for: .normal)
+        case (_, let studentImageName?):
+            imageButton.setImage(studentImageName.withRenderingMode(.alwaysOriginal), for: .normal)
+        default:
+           break
+        }
+        
+        // Student Name Label
+        view.addSubview(studentNameLabel)
+        studentNameLabel.text = "Name"
+        studentNameLabel.snp.makeConstraints { make in
+            make.top.equalTo(imageButton.snp.bottom).offset(50)
+            make.leading.equalToSuperview().offset(20)
+        }
+        studentNameLabel.font = UIFont.systemFont(ofSize: 14)
+        
+        // Student Name TextField
         view.addSubview(studentNameTextField)
         studentNameTextField.snp.makeConstraints { make in
-            make.top.equalTo(imageButton.snp.bottom).offset(20)
+            make.top.equalTo(studentNameLabel.snp.bottom).offset(7)
             make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.height.equalTo(50)
         }
         studentNameTextField.borderStyle = .roundedRect
-        studentNameTextField.placeholder = "Введите Имя"
+        studentNameTextField.placeholder = "Enter name"
+        studentNameTextField.text = student?.name ?? ""
         
-        // Phone Number
+        // Phone Label
+        view.addSubview(phoneLabel)
+        phoneLabel.text = "Phone Number"
+        phoneLabel.snp.makeConstraints { make in
+            make.top.equalTo(studentNameTextField.snp.bottom).offset(20)
+            make.leading.equalToSuperview().offset(20)
+        }
+        phoneLabel.font = UIFont.systemFont(ofSize: 14)
+        
+        // Phone TextField
         view.addSubview(phoneTextField)
         phoneTextField.snp.makeConstraints { make in
-            make.top.equalTo(studentNameTextField.snp.bottom).offset(20)
+            make.top.equalTo(phoneLabel.snp.bottom).offset(7)
             make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.height.equalTo(50)
         }
         phoneTextField.borderStyle = .roundedRect
-        phoneTextField.placeholder = "Введите номер телефона"
+        phoneTextField.placeholder = "Enter phone number"
+        phoneTextField.text = student?.phoneNumber ?? ""
         
-        // Schedule
+        // Schedule Label
+        view.addSubview(scheduleLabel)
+        scheduleLabel.text = "Schedule"
+        scheduleLabel.snp.makeConstraints { make in
+            make.top.equalTo(phoneTextField.snp.bottom).offset(20)
+            make.leading.equalToSuperview().offset(20)
+        }
+        scheduleLabel.font = UIFont.systemFont(ofSize: 14)
+
+        // Schedule TextField
         view.addSubview(scheduleTextField)
         scheduleTextField.snp.makeConstraints { make in
-            make.top.equalTo(phoneTextField.snp.bottom).offset(20)
+            make.top.equalTo(scheduleLabel.snp.bottom).offset(7)
             make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.height.equalTo(50)
         }
         scheduleTextField.borderStyle = .roundedRect
-        scheduleTextField.placeholder = "Выберите дни недели и время"
+        scheduleTextField.placeholder = "Select the days of the week and time"
         scheduleTextField.isUserInteractionEnabled = true // Делаем текстовое поле доступным для взаимодействия
         scheduleTextField.adjustsFontSizeToFitWidth = true
         scheduleTextField.minimumFontSize = 10
+        
         // Добавляем жест тапа для отображения контроллера выбора
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectSchedule))
         scheduleTextField.addGestureRecognizer(tapGesture)
-        
-        // Paid Months Label
-        view.addSubview(paidMonthsLabel)
-        paidMonthsLabel.snp.makeConstraints { make in
-            make.top.equalTo(scheduleTextField.snp.bottom).offset(20)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
-        }
-        paidMonthsLabel.text = "Оплаченные месяцы:"
-        
-        // Paid Months Table
-        view.addSubview(paidMonthsTableView)
-        paidMonthsTableView.snp.makeConstraints { make in
-            make.top.equalTo(paidMonthsLabel.snp.bottom).offset(20)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(0)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(0)
-        }
-        
-        // Add Paid Month Button
-        view.addSubview(addPaidMonthButton)
-        addPaidMonthButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.height.equalTo(44)
-        }
-        addPaidMonthButton.setTitle("Добавить месяц", for: .normal)
-        addPaidMonthButton.layer.cornerRadius = 10
-        addPaidMonthButton.setTitleColor(.white, for: .normal)
-        addPaidMonthButton.backgroundColor = .systemBlue
-        addPaidMonthButton.addTarget(self, action: #selector(addPaidMonthButtonTapped), for: .touchUpInside)
-        
-        // Настройка таблицы оплаченных месяцев
-        paidMonthsTableView.dataSource = self
-        paidMonthsTableView.delegate = self
-        paidMonthsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "PaidMonthCell")
-        
     }
-}
 
-extension StudentCardViewController: MonthLessonsDelegate {
-    func didUpdateStudentLessons(_ lessons: [String: [Lesson]]) {
-        lessonsForNewStudent = lessons
-    }
 }
 
 
-// MARK: - StudentAddingViewController
-
-extension StudentCardViewController {
-    
-    // MARK: - Actions
-    
-    @objc func selectSchedule() {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
-        let addScheduleAction = UIAlertAction(title: "Добавить расписание", style: .default) { [weak self] _ in
-            self?.showWeekdaysPicker()
-        }
-        actionSheet.addAction(addScheduleAction)
-        
-        if !selectedSchedules.isEmpty {
-            let deleteAction = UIAlertAction(title: "Удалить расписание", style: .destructive) { [weak self] _ in
-                self?.showDeleteScheduleAlert()
-            }
-            actionSheet.addAction(deleteAction)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        actionSheet.addAction(cancelAction)
-        
-        present(actionSheet, animated: true, completion: nil)
-    }
-
-     func showWeekdaysPicker() {
-        let weekdaysPickerController = UIAlertController(title: "Выберите день недели", message: nil, preferredStyle: .actionSheet)
-        
-        let weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-        
-        for weekday in weekdays {
-            let action = UIAlertAction(title: weekday, style: .default) { [weak self] _ in
-                self?.showTimesPicker(for: weekday)
-            }
-            weekdaysPickerController.addAction(action)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        weekdaysPickerController.addAction(cancelAction)
-        
-        present(weekdaysPickerController, animated: true, completion: nil)
-    }
-    
-    func showTimesPicker(for weekday: String) {
-        // Создаем экземпляр UIDatePicker с типом .time
-        let timePicker = UIDatePicker()
-        timePicker.datePickerMode = .time
-        
-        // Создаем UIAlertController
-        let timesPickerController = UIAlertController(title: "Выберите время для \(weekday)", message: "\n\n\n\n\n\n", preferredStyle: .actionSheet)
-        
-        // Добавляем UIDatePicker в UIAlertController
-        timesPickerController.view.addSubview(timePicker)
-        
-        // Создаем действия для выбора времени и отмены
-        let selectAction = UIAlertAction(title: "Выбрать", style: .default) { [weak self] _ in
-            let selectedTime = self?.formatTime(timePicker.date)
-            self?.selectedSchedules.append((weekday: weekday, time: selectedTime ?? ""))
-            self?.updateScheduleTextField()
-        }
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        
-        // Добавляем действия в UIAlertController
-        timesPickerController.addAction(selectAction)
-        timesPickerController.addAction(cancelAction)
-        
-        // Показываем UIAlertController
-        present(timesPickerController, animated: true, completion: nil)
-    }
-
-    // MARK: - Helper Methods
-
-     func updateScheduleTextField() {
-        let scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
-        let scheduleString = scheduleStrings.joined(separator: ", ")
-        scheduleTextField.text = scheduleString
-    }
-    
-     func showDeleteScheduleAlert() {
-        let alert = UIAlertController(title: "Выберите день недели и время для удаления", message: nil, preferredStyle: .actionSheet)
-        
-        for schedule in selectedSchedules {
-            let action = UIAlertAction(title: "\(schedule.weekday) \(schedule.time)", style: .default) { [weak self] _ in
-                self?.removeSchedule(schedule)
-            }
-            alert.addAction(action)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        alert.addAction(cancelAction)
-        
-        present(alert, animated: true, completion: nil)
-    }
-
-     func removeSchedule(_ schedule: (weekday: String, time: String)) {
-        if let index = selectedSchedules.firstIndex(where: { $0 == schedule }) {
-            selectedSchedules.remove(at: index)
-            updateScheduleTextField()
-        }
-    }
-    
-    // Метод для форматирования выбранного времени
-    func formatTime(_ date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm"
-        return dateFormatter.string(from: date)
-    }
-}
 
 // MARK: - imagePickerController
 
@@ -455,102 +355,224 @@ extension UIImage {
     }
 }
 
-
-
-
-// MARK: - StudentAddingViewController TableView
-
-extension StudentCardViewController: UITableViewDelegate, UITableViewDataSource {
+extension StudentCardViewController {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return paidMonths.count
-    }
+    // MARK: - Actions
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PaidMonthCell", for: indexPath) as! PaidMonthCell
+    @objc func selectSchedule() {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
-        let paidMonth = paidMonths[indexPath.row]
-        cell.textLabel?.text = paidMonth.month
-        cell.switchControl.isOn = paidMonth.isPaid // Установка состояния UISwitch
+        let addScheduleAction = UIAlertAction(title: "Add a schedule", style: .default) { [weak self] _ in
+            self?.showWeekdaysPicker()
+        }
+        actionSheet.addAction(addScheduleAction)
         
-        // Обработка изменений состояния UISwitch
-        cell.switchControl.addTarget(self, action: #selector(switchValueChanged(_:)), for: .valueChanged)
+        switch editMode {
+        case .add:
+           if !selectedSchedules.isEmpty {
+                let deleteAction = UIAlertAction(title: "Delete the schedule", style: .destructive) { [weak self] _ in
+                    self?.showDeleteScheduleAlert()
+                }
+                actionSheet.addAction(deleteAction)
+            }
         
-        // Установка стиля выделения ячейки
-        cell.selectionStyle = .none
-        
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedMonth = paidMonths[indexPath.row].month
-        
-        // Получаем текущее значение isPaid для выбранного месяца
-            let isMonthPaid = paidMonths[indexPath.row].isPaid
-        
-        if student == nil {
-            // Создаем новый объект Student, передавая необходимые параметры
-            student = Student(name: studentNameTextField.text ?? "", phoneNumber: phoneTextField.text ?? "", paidMonths: [PaidMonth(month: selectedMonth, isPaid: isMonthPaid)], lessons: [:], schedule: [], image: nil)
+        case .edit:
+            if !(student?.schedule.isEmpty ?? true) || !selectedSchedules.isEmpty {
+                let deleteAction = UIAlertAction(title: "Delete the schedule", style: .destructive) { [weak self] _ in
+                    self?.showDeleteScheduleAlert()
+                }
+                actionSheet.addAction(deleteAction)
+            }
         }
         
-        // Создаем новый контроллер для отображения уроков выбранного месяца
-        let monthLessonsVC = MonthLessonsViewController()
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        actionSheet.addAction(cancelAction)
         
-        // Передаем объект Student в MonthLessonsViewController
-        monthLessonsVC.student = student
-        monthLessonsVC.selectedMonth = selectedMonth
-        monthLessonsVC.selectedSchedules = selectedSchedules
-        monthLessonsVC.temporaryLessons = lessonsForNewStudent
-        monthLessonsVC.delegate = self
+        present(actionSheet, animated: true, completion: nil)
         
-        print("Navigating to MonthLessonsViewController")
-        
-        // Переходим к контроллеру с уроками выбранного месяца
-        navigationController?.pushViewController(monthLessonsVC, animated: true)
+        actionSheet.view.snp.makeConstraints { make in
+            make.width.equalTo(400)
+        }
     }
-    
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-       return true
-   }
 
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-       if editingStyle == .delete {
-           let alertController = UIAlertController(title: "Подтвердите удаление", message: "Вы уверены, что хотите удалить этот месяц?", preferredStyle: .alert)
-           
-           let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-           alertController.addAction(cancelAction)
-           
-           let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
-               self?.deleteMonth(at: indexPath)
-           }
-           alertController.addAction(deleteAction)
-           
-           present(alertController, animated: true, completion: nil)
-       }
-   }
-
-   func deleteMonth(at indexPath: IndexPath) {
-       paidMonths.remove(at: indexPath.row)
-       paidMonthsTableView.deleteRows(at: [indexPath], with: .fade)
-   }
-
-    
-    // MARK: - Switch Value Changed for PaidMonth
-    
-    @objc func switchValueChanged(_ sender: UISwitch) {
-        guard let cell = sender.superview?.superview as? PaidMonthCell,
-              let indexPath = paidMonthsTableView.indexPath(for: cell) else {
-            return
+    func showWeekdaysPicker() {
+        let weekdaysPickerController = UIAlertController(title: "Choose a day of the week", message: nil, preferredStyle: .actionSheet)
+        
+        let weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        
+        for weekday in weekdays {
+            let action = UIAlertAction(title: weekday, style: .default) { [weak self] _ in
+                self?.showTimesPicker(for: weekday)
+            }
+            weekdaysPickerController.addAction(action)
         }
         
-        // Обновляем состояние в массиве данных
-        paidMonths[indexPath.row].isPaid = sender.isOn
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        weekdaysPickerController.addAction(cancelAction)
         
-        // Отладочный вывод
-        print("Switch value changed at index \(indexPath.row). New value isPaid: \(sender.isOn)")
+        present(weekdaysPickerController, animated: true, completion: nil)
         
-        // Обновляем отображение ячейки
-        paidMonthsTableView.reloadRows(at: [indexPath], with: .automatic)
+        weekdaysPickerController.view.snp.makeConstraints { make in
+            make.width.equalTo(400)
+            make.height.equalTo(300)
+            
+        }
+    }
+    
+    func showTimesPicker(for weekday: String) {
+        // Создаем экземпляр UIDatePicker с типом .time
+        let timePicker = UIDatePicker()
+        timePicker.datePickerMode = .time
+        timePicker.preferredDatePickerStyle = .wheels
+        
+        // Установим начальное время, например, 12:00
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.hour = 12
+        components.minute = 0
+        if let initialDate = calendar.date(from: components) {
+            timePicker.setDate(initialDate, animated: false)
+        }
+        
+        // Создаем UIAlertController
+        let timesPickerController = UIAlertController(title: "Choose a time for \(weekday)", message: "", preferredStyle: .actionSheet)
+        
+        // Добавляем UIDatePicker в UIAlertController
+        timesPickerController.view.addSubview(timePicker)
+        
+        // Создаем действия для выбора времени и отмены
+        let selectAction = UIAlertAction(title: "Choose", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let selectedTime = self.formatTime(timePicker.date)
+            let newSchedule = (weekday: weekday, time: selectedTime)
+            self.selectedSchedules.append(newSchedule)
+            self.updateScheduleTextField()
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        // Добавляем действия в UIAlertController
+        timesPickerController.addAction(selectAction)
+        timesPickerController.addAction(cancelAction)
+        
+        // Показываем UIAlertController
+        present(timesPickerController, animated: true, completion: nil)
+        
+        timesPickerController.view.snp.makeConstraints { make in
+            make.width.equalTo(400)
+            make.height.equalTo(300)
+        }
+        
+        timePicker.snp.makeConstraints { make in
+            make.height.equalTo(160)
+            make.top.equalTo(timesPickerController.view.snp.top).offset(30)
+            make.leading.equalTo(timesPickerController.view.snp.leading)
+            make.trailing.equalTo(timesPickerController.view.snp.trailing)
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    // Обновление текстового поля с расписанием
+    func updateScheduleTextField() {
+        var scheduleStrings = [String]()
+        
+        switch editMode {
+        case .add:
+            scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
+        case .edit:
+            let selectedScheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
+            let studentScheduleStrings = student?.schedule.map { "\($0.weekday) \($0.time)" } ?? []
+            scheduleStrings = studentScheduleStrings + selectedScheduleStrings
+        }
+        
+        let scheduleText = scheduleStrings.joined(separator: ", ")
+        scheduleTextField.text = scheduleText
+    }
+
+    
+    func showDeleteScheduleAlert() {
+        let alert = UIAlertController(title: "Select the day of the week and the time to delete", message: nil, preferredStyle: .actionSheet)
+        
+        switch editMode {
+        case .add:
+            for schedule in selectedSchedules {
+                let action = UIAlertAction(title: "\(schedule.weekday) \(schedule.time)", style: .default) { [weak self] _ in
+                    self?.removeSchedule(schedule.weekday, from: .add)
+                }
+                alert.addAction(action)
+            }
+        case .edit:
+            // Преобразуем расписание ученика к формату [(weekday: String, time: String)]
+            let studentSchedules = student?.schedule.map { ($0.weekday, $0.time) } ?? []
+            
+            // Объединяем выбранные пользователем расписания и расписание ученика
+            let allSchedules = studentSchedules + selectedSchedules
+            
+            for schedule in allSchedules {
+                let action = UIAlertAction(title: "\(schedule.0) \(schedule.1)", style: .default) { [weak self] _ in
+                    self?.removeSchedule(schedule.0, from: .edit)
+                }
+                alert.addAction(action)
+            }
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+
+
+    func removeSchedule(_ schedule: String, from mode: EditMode) {
+        switch mode {
+        case .add:
+            if let index = selectedSchedules.firstIndex(where: { $0.weekday == schedule }) {
+                selectedSchedules.remove(at: index)
+                updateScheduleTextField()
+            }
+        case .edit:
+            if let index = selectedSchedules.firstIndex(where: { $0.weekday == schedule }) {
+                selectedSchedules.remove(at: index)
+                updateScheduleTextField()
+            }
+            if let index = student?.schedule.firstIndex(where: { $0.weekday == schedule }) {
+                student?.schedule.remove(at: index)
+                updateScheduleTextField()
+            }
+        }
+    }
+
+    // Метод для форматирования выбранного времени
+    func formatTime(_ date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        return dateFormatter.string(from: date)
+    }
+    
+    func printScheduleAvailability() {
+        if let student = student {
+            if student.schedule.isEmpty {
+                print("У ученика нет расписания")
+            } else {
+                print("У ученика есть расписание:")
+                for schedule in student.schedule {
+                    print("\(schedule.weekday) \(schedule.time)")
+                }
+            }
+        } else {
+            print("Ученик не выбран")
+        }
+    }
+
+    func printSelectedSchedules() {
+        if selectedSchedules.isEmpty {
+            print("Выбранных расписаний нет")
+        } else {
+            print("Выбранные расписания:")
+            for schedule in selectedSchedules {
+                print("\(schedule.weekday) \(schedule.time)")
+            }
+        }
     }
 }
-

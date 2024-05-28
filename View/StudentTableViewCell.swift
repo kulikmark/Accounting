@@ -6,91 +6,103 @@
 //
 
 import UIKit
+import SnapKit
 
 class StudentTableViewCell: UITableViewCell {
-    var profileImageView: UIImageView = {
-          let imageView = UIImageView()
-          // Настройка изображения профиля
+    
+    var student: Student?
+    
+    lazy var profileImageView: UIImageView = {
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-          return imageView
-      }()
-      
-      var nameLabel: UILabel = {
-          let label = UILabel()
-          // Настройка метки имени
-          return label
-      }()
-      
-      var phoneNumberLabel: UILabel = {
-          let label = UILabel()
-          // Настройка метки номера телефона
-          return label
-      }()
-      
-      var parentNameLabel: UILabel = {
-          let label = UILabel()
-          // Настройка метки имени родителя
-          return label
-      }()
-      
+        return imageView
+    }()
+    
+    lazy var studentNameLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.adjustsFontSizeToFitWidth = true
+        label.lineBreakMode = .byWordWrapping
+        return label
+    }()
+    
+    lazy var phoneNumberLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.adjustsFontSizeToFitWidth = true
+        label.lineBreakMode = .byWordWrapping
+        return label
+    }()
+    
+    lazy var scheduleLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.adjustsFontSizeToFitWidth = true
+        label.lineBreakMode = .byWordWrapping
+        return label
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        // Добавляем подвиды в ячейку
         contentView.addSubview(profileImageView)
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(phoneNumberLabel)
-        contentView.addSubview(parentNameLabel)
-        
-        // Disable autoresizing mask translation
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        phoneNumberLabel.translatesAutoresizingMaskIntoConstraints = false
-        parentNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Add constraints
-        NSLayoutConstraint.activate([
-            // Profile image view constraints
-            profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            profileImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            profileImageView.widthAnchor.constraint(equalToConstant: 50),
-            profileImageView.heightAnchor.constraint(equalToConstant: 50),
-            
-            // Name label constraints
-            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 16),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            
-            // Phone number label constraints
-            phoneNumberLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
-            phoneNumberLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            phoneNumberLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            
-            // Parent name label constraints
-            parentNameLabel.topAnchor.constraint(equalTo: phoneNumberLabel.bottomAnchor, constant: 8),
-            parentNameLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            parentNameLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            parentNameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8) // Adjust bottom constraint as needed
-        ])
+               contentView.addSubview(studentNameLabel)
+               contentView.addSubview(phoneNumberLabel)
+               contentView.addSubview(scheduleLabel)
+               
+               setupConstraints()
     }
     
-    // Обновленный метод configure(with:) в StudentTableViewCell
-    func configure(with student: Student, image: UIImage?) {
-        profileImageView.image = image ?? UIImage(named: "icon")
-        nameLabel.text = student.name
-        phoneNumberLabel.text = student.phoneNumber
-        parentNameLabel.text = student.parentName
-        
-        // Добавим отладочный вывод здесь, чтобы проверить установленное изображение
-        if let profileImage = profileImageView.image {
-            print("Profile image set to:", profileImage)
-        } else {
-            print("Profile image is nil")
+    func setupConstraints() {
+            profileImageView.snp.makeConstraints { make in
+                make.top.leading.equalToSuperview().offset(10)
+                make.width.height.equalTo(100)
+                make.bottom.lessThanOrEqualToSuperview().offset(-10)
+            }
+            profileImageView.layer.cornerRadius = 50
+            profileImageView.clipsToBounds = true
+            
+            studentNameLabel.snp.makeConstraints { make in
+                make.top.equalTo(profileImageView)
+                make.leading.equalTo(profileImageView.snp.trailing).offset(16)
+                make.trailing.equalToSuperview().offset(-10)
+            }
+            
+            phoneNumberLabel.snp.makeConstraints { make in
+                make.top.equalTo(studentNameLabel.snp.bottom).offset(5)
+                make.leading.trailing.equalTo(studentNameLabel)
+            }
+            
+            scheduleLabel.snp.makeConstraints { make in
+                make.top.equalTo(phoneNumberLabel.snp.bottom).offset(5)
+                make.leading.trailing.equalTo(studentNameLabel)
+                make.bottom.lessThanOrEqualToSuperview().offset(-10)
+            }
         }
-    }
-      
-      required init?(coder aDecoder: NSCoder) {
-          fatalError("init(coder:) has not been implemented")
-      }
-  }
+    
+    func configure(with student: Student, image: UIImage?) {
+        
+        if let profileImage = image {
+               // Если передано изображение, используем его
+               profileImageView.image = profileImage
+           } else if let studentImage = student.imageForCell {
+               // Если у студента есть изображение, используем его
+               profileImageView.image = studentImage
+           } else {
+               // Если изображение отсутствует как у студента, так и не было передано, установите замену, например, иконку по умолчанию
+               profileImageView.image = UIImage(named: "icon")
+           }
+        
+        studentNameLabel.text = "Name: \(student.name)"
+        phoneNumberLabel.text = "Number: \(student.phoneNumber)"
+        // Формируем строку расписания из массива структур Schedule
+        let scheduleString = student.schedule.map { "\($0.weekday) \($0.time)" }.joined(separator: ", ")
 
+        // Присваиваем полученную строку текстовому полю scheduleLabel
+        scheduleLabel.text = "Schedule: \(scheduleString)"
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}

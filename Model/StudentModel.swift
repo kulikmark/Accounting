@@ -14,10 +14,10 @@ class Student {
     var imageForCell: UIImage?
     var phoneNumber: String
     var paidMonths: [PaidMonth]
-    var lessons: [Lesson]
+    var lessons: [String: [Lesson]]
     var schedule: [Schedule]
     
-    init(id: UUID = UUID(), name: String, phoneNumber: String, paidMonths: [PaidMonth], lessons: [Lesson], schedule: [Schedule], image: UIImage? = nil) {
+    init(id: UUID = UUID(), name: String, phoneNumber: String, paidMonths: [PaidMonth], lessons: [String: [Lesson]], schedule: [Schedule], image: UIImage? = nil) {
           self.id = id
           self.name = name
           self.imageForCell = image
