@@ -28,7 +28,7 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
     var lessonsForStudent: [String: [Lesson]] = [:]
     
     let paidMonthsLabel = UILabel()
-    let paidMonthsTableView = UITableView()
+//    let paidMonthsTableView = UITableView()
     let addPaidMonthButton = UIButton(type: .system)
     
     // MARK: - View Lifecycle
@@ -36,12 +36,11 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        paidMonthsTableView.separatorStyle = .singleLine
-        paidMonthsTableView.separatorColor = UIColor.lightGray // Установите желаемый цвет разделителя
-        paidMonthsTableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        
-        // Выполните операции с UITableView здесь
-        paidMonthsTableView.reloadData()
+        tableView.separatorStyle = .singleLine
+               tableView.separatorColor = UIColor.lightGray
+               tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+               
+               tableView.reloadData()
     }
     
     override func viewDidLoad() {
@@ -54,7 +53,7 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
         //        let saveButton = UIBarButtonItem(title: "Сохранить", style: .plain, target: self, action: #selector(saveButtonTapped))
         //        navigationItem.rightBarButtonItem = saveButton
         
-        paidMonthsTableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
+        tableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
         
         //        print("selectedschedules \(selectedSchedules)")
         //        print("massive schedules \(schedules)")
@@ -84,13 +83,8 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedMonth = paidMonths[indexPath.row].month
         
-        // Получаем текущее значение isPaid для выбранного месяца
-        let isMonthPaid = paidMonths[indexPath.row].isPaid
-        
-        //        if student == nil {
-        //            // Создаем новый объект Student, передавая необходимые параметры
-        //            student = Student(name: studentNameTextField.text ?? "", phoneNumber: phoneTextField.text ?? "", paidMonths: [PaidMonth(month: selectedMonth, isPaid: isMonthPaid)], lessons: [:], schedule: [], image: nil)
-        //        }
+//        // Получаем текущее значение isPaid для выбранного месяца
+//        let isMonthPaid = paidMonths[indexPath.row].isPaid
         
         // Создаем новый контроллер для отображения уроков выбранного месяца
         let monthLessonsVC = MonthLessonsViewController()
@@ -130,14 +124,14 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
     
     func deleteMonth(at indexPath: IndexPath) {
         paidMonths.remove(at: indexPath.row)
-        paidMonthsTableView.deleteRows(at: [indexPath], with: .fade)
+        tableView.deleteRows(at: [indexPath], with: .fade)
     }
     
     // MARK: - Switch Value Changed for PaidMonth
     
     @objc func switchValueChanged(_ sender: UISwitch) {
         guard let cell = sender.superview?.superview as? PaidMonthCell,
-              let indexPath = paidMonthsTableView.indexPath(for: cell) else {
+              let indexPath = tableView.indexPath(for: cell) else {
             return
         }
         
@@ -148,7 +142,7 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate {
         print("Switch value changed at index \(indexPath.row). New value isPaid: \(sender.isOn)")
         
         // Обновляем отображение ячейки
-        paidMonthsTableView.reloadRows(at: [indexPath], with: .automatic)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }
 
@@ -168,14 +162,6 @@ extension MonthsTableViewController {
         //        }
         //        paidMonthsLabel.text = "Оплаченные месяцы:"
         
-        // Paid Months Table
-        view.addSubview(paidMonthsTableView)
-        paidMonthsTableView.snp.makeConstraints { make in
-            make.top.equalTo(paidMonthsLabel.snp.bottom).offset(20)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(0)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(0)
-        }
-        
         // Add Paid Month Button
         view.addSubview(addPaidMonthButton)
         addPaidMonthButton.snp.makeConstraints { make in
@@ -183,16 +169,16 @@ extension MonthsTableViewController {
             make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.height.equalTo(44)
         }
-        addPaidMonthButton.setTitle("Добавить месяц", for: .normal)
+        addPaidMonthButton.setTitle("Add month", for: .normal)
         addPaidMonthButton.layer.cornerRadius = 10
         addPaidMonthButton.setTitleColor(.white, for: .normal)
         addPaidMonthButton.backgroundColor = .systemBlue
         addPaidMonthButton.addTarget(self, action: #selector(addPaidMonthButtonTapped), for: .touchUpInside)
         
         // Настройка таблицы оплаченных месяцев
-        paidMonthsTableView.dataSource = self
-        paidMonthsTableView.delegate = self
-        paidMonthsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "PaidMonthCell")
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "PaidMonthCell")
         
     }
     
@@ -227,11 +213,11 @@ extension MonthsTableViewController {
         
         // Вставляем новую строку в таблицу и обновляем UI
         let indexPath = IndexPath(row: paidMonths.count - 1, section: 0)
-        paidMonthsTableView.insertRows(at: [indexPath], with: .automatic)
+        tableView.insertRows(at: [indexPath], with: .automatic)
         updateUI()
     }
     
     func updateUI() {
-        paidMonthsTableView.reloadData()
+        tableView.reloadData()
     }
 }

@@ -14,17 +14,19 @@ class Student {
     var imageForCell: UIImage?
     var phoneNumber: String
     var paidMonths: [PaidMonth]
+    var lessonPrice: String
     var lessons: [String: [Lesson]]
     var schedule: [Schedule]
     
-    init(id: UUID = UUID(), name: String, phoneNumber: String, paidMonths: [PaidMonth], lessons: [String: [Lesson]], schedule: [Schedule], image: UIImage? = nil) {
-          self.id = id
-          self.name = name
-          self.imageForCell = image
-          self.phoneNumber = phoneNumber
-          self.paidMonths = paidMonths
-          self.lessons = lessons
-          self.schedule = schedule
+    init(id: UUID = UUID(), name: String, phoneNumber: String, paidMonths: [PaidMonth], lessonPrice: String, lessons: [String: [Lesson]], schedule: [Schedule], image: UIImage? = nil) {
+        self.id = id
+        self.name = name
+        self.imageForCell = image
+        self.phoneNumber = phoneNumber
+        self.paidMonths = paidMonths
+        self.lessonPrice = lessonPrice
+        self.lessons = lessons
+        self.schedule = schedule
     }
 }
 
