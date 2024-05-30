@@ -9,7 +9,7 @@ import UIKit
 
 class Student {
     
-    var id: UUID // Уникальный идентификатор
+    var id: UUID
     var name: String
     var imageForCell: UIImage?
     var phoneNumber: String
@@ -18,7 +18,15 @@ class Student {
     var lessons: [String: [Lesson]]
     var schedule: [Schedule]
     
-    init(id: UUID = UUID(), name: String, phoneNumber: String, paidMonths: [PaidMonth], lessonPrice: String, lessons: [String: [Lesson]], schedule: [Schedule], image: UIImage? = nil) {
+    init(id: UUID = UUID(),
+         name: String,
+         phoneNumber: String,
+         paidMonths: [PaidMonth],
+         lessonPrice: String,
+         lessons: [String: [Lesson]],
+         schedule: [Schedule],
+         image: UIImage? = nil) {
+        
         self.id = id
         self.name = name
         self.imageForCell = image
@@ -30,18 +38,18 @@ class Student {
     }
 }
 
-// Создаем новый тип для представления расписания
+
 struct Schedule {
     var weekday: String
     var time: String
 }
-// Создаем новый тип для представления оплаченного месяца
+
 struct PaidMonth {
     var month: String
     var isPaid: Bool
 }
 
-// Создаем новый тип для представления уроков
+
 struct Lesson: Codable {
     var date: String
     var attended: Bool

@@ -52,7 +52,7 @@ extension StudentCardViewController {
     func showWeekdaysPicker() {
         let weekdaysPickerController = UIAlertController(title: "Choose a day of the week", message: nil, preferredStyle: .actionSheet)
         
-        let weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        let weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
         
         for weekday in weekdays {
             let action = UIAlertAction(title: weekday, style: .default) { [weak self] _ in

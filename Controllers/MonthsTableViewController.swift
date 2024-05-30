@@ -187,7 +187,7 @@ extension MonthsTableViewController {
         
         alertController.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
         
-        for month in ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"] {
+        for month in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] {
             alertController.addAction(UIAlertAction(title: month, style: .default, handler: { [weak self] _ in
                 self?.addPaidMonth(month)
             }))

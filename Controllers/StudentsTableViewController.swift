@@ -11,13 +11,16 @@ import UIKit
 class StudentsTableViewController: UITableViewController {
     
     var student: Student?
-//    var students = [Student]()
     
-    var students = [Student]() {
-           didSet {
-               updateStartScreenLabelVisibility()
-           }
-       }
+    var students: [Student] {
+            get {
+                return StudentStore.shared.students
+            }
+            set {
+                StudentStore.shared.students = newValue
+                updateStartScreenLabelVisibility()
+            }
+        }
     
        private var startScreenLabel: UILabel?
     
@@ -30,11 +33,13 @@ class StudentsTableViewController: UITableViewController {
         
         // Выполните операции с UITableView здесь
         tableView.reloadData()
+        
+        print("\(students.count)")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //            title = "MY STUDENTS"
+   
         tableView.register(StudentTableViewCell.self, forCellReuseIdentifier: "StudentCell")
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewStudent))
@@ -46,6 +51,8 @@ class StudentsTableViewController: UITableViewController {
         
         setupStartScreenLabel()
         updateStartScreenLabelVisibility()
+        
+        print("\(students.count)")
         
     }
     
@@ -94,7 +101,6 @@ class StudentsTableViewController: UITableViewController {
         studentCardVC.paidMonths = student.paidMonths
 //        studentDetailVC.lessonsForStudent = student.lessons
         
-        print("student in didSelectRowAt from StudentsTableViewController \(student.schedule)")
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
     
@@ -138,6 +144,7 @@ class StudentsTableViewController: UITableViewController {
 extension StudentsTableViewController: StudentCardDelegate {
     
     func didCreateStudent(_ existingStudent: Student, withImage: UIImage?) {
+        
             if let index = students.firstIndex(where: { $0.id == existingStudent.id }) {
                 // Если ученик уже существует в массиве, обновляем его
                 students[index] = existingStudent

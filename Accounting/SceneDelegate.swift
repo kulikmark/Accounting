@@ -20,17 +20,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         
         let studentsTableViewController = StudentsTableViewController()
-        let monthsTableViewController = MonthsTableViewController()
+        let accountingTableViewController = AccountingTableViewController()
         let homeWorkTableViewController = HomeWorkTableViewController()
         
         
         let studentsNavController = UINavigationController(rootViewController: studentsTableViewController)
-        let monthsNavController = UINavigationController(rootViewController: monthsTableViewController)
+        let accountingNavController = UINavigationController(rootViewController: accountingTableViewController)
         let homeWorkNavController = UINavigationController(rootViewController: homeWorkTableViewController)
         
         
         let tabBarController = UITabBarController()
-        tabBarController.viewControllers = [studentsNavController, monthsNavController, homeWorkNavController]
+        tabBarController.viewControllers = [studentsNavController, accountingNavController, homeWorkNavController]
         
         
         if let studentsIcon = UIImage(named: "student_icon")?.withRenderingMode(.alwaysOriginal) {
@@ -38,7 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         if let accountingIcon = UIImage(named: "accounting_icon")?.withRenderingMode(.alwaysOriginal) {
-            monthsNavController.tabBarItem = UITabBarItem(title: "Accounting", image: accountingIcon, tag: 1)
+            accountingNavController.tabBarItem = UITabBarItem(title: "Accounting", image: accountingIcon, tag: 1)
         }
         
         if let homeworkIcon = UIImage(named: "homework_icon")?.withRenderingMode(.alwaysOriginal) {

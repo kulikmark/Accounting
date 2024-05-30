@@ -67,7 +67,15 @@ class StudentCardViewController: UIViewController {
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
         
+        // Добавляем жест для скрытия клавиатуры при тапе вне текстовых полей
+           let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
+           view.addGestureRecognizer(tapGesture)
     }
+    
+    // Функция для скрытия клавиатуры при тапе вне текстовых полей
+       @objc private func hideKeyboardOnTap() {
+           view.endEditing(true)
+       }
     
     init(editMode: EditMode, delegate: StudentCardDelegate?) {
         self.editMode = editMode
@@ -93,6 +101,9 @@ class StudentCardViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func saveButtonTapped() {
+        // Скрыть клавиатуру перед сохранением
+         view.endEditing(true)
+        
         if let existingStudent = student {
             saveStudent(existingStudent, mode: .edit)
         } else {

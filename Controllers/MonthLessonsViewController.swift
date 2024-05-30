@@ -337,22 +337,22 @@ extension MonthLessonsViewController {
     }
     
     func loadLessonsForSelectedMonth() {
-        guard let student = student else {
-            print("Error: Student is nil")
-            return
-        }
-        
-        // Проверяем, есть ли уроки для выбранного месяца во временном массиве
-        if let lessonsForSelectedMonth = temporaryLessons[selectedMonth] {
-            // Если уроки уже добавлены для выбранного месяца, присваиваем их во временный словарь
-            temporaryLessons[selectedMonth] = lessonsForSelectedMonth
-        } else {
-            // Если уроки еще не добавлены для выбранного месяца, создаем пустой массив уроков для него
-            temporaryLessons[selectedMonth] = []
-        }
-        
-        // Перезагружаем таблицу для отображения уроков
-        tableView?.reloadData()
+//        guard let student = student else {
+//            print("Error: Student is nil")
+//            return
+//        }
+//        
+//        // Проверяем, есть ли уроки для выбранного месяца во временном массиве
+//        if let lessonsForSelectedMonth = temporaryLessons[selectedMonth] {
+//            // Если уроки уже добавлены для выбранного месяца, присваиваем их во временный словарь
+//            temporaryLessons[selectedMonth] = lessonsForSelectedMonth
+//        } else {
+//            // Если уроки еще не добавлены для выбранного месяца, создаем пустой массив уроков для него
+//            temporaryLessons[selectedMonth] = []
+//        }
+//        
+//        // Перезагружаем таблицу для отображения уроков
+//        tableView?.reloadData()
     }
 
     

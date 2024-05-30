@@ -12,7 +12,6 @@ import UIKit
 extension StudentCardViewController {
     
     func setupUI() {
-        
         view.backgroundColor = .white
         
         // Add Image Button
@@ -36,7 +35,7 @@ extension StudentCardViewController {
         case (_, let studentImageName?):
             imageButton.setImage(studentImageName.withRenderingMode(.alwaysOriginal), for: .normal)
         default:
-           break
+            break
         }
         
         // Student Name Label
@@ -107,7 +106,7 @@ extension StudentCardViewController {
             make.leading.equalToSuperview().offset(20)
         }
         scheduleLabel.font = UIFont.systemFont(ofSize: 14)
-
+        
         // Schedule TextField
         view.addSubview(scheduleTextField)
         scheduleTextField.snp.makeConstraints { make in
@@ -124,6 +123,10 @@ extension StudentCardViewController {
         // Добавляем жест тапа для отображения контроллера выбора
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectSchedule))
         scheduleTextField.addGestureRecognizer(tapGesture)
+        
+        studentNameTextField.delegate = self
+        phoneTextField.delegate = self
+        lessonPriceTextField.delegate = self
+        
     }
 }
-

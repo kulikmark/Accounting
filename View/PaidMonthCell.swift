@@ -21,7 +21,7 @@ class PaidMonthCell: UITableViewCell {
     // Метка для отображения текста "Оплачен"
     let paidLabel: UILabel = {
         let label = UILabel()
-        label.text = "Оплачен"
+        label.text = "Paid"
         return label
     }()
     
