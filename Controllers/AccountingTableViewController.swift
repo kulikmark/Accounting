@@ -9,7 +9,7 @@
 import UIKit
 
 // Контроллер таблицы учеников
-class AccountingTableViewController: UITableViewController {
+class AccountingTableViewController: UITableViewController, MonthsTableViewControllerDelegate {
     
     var student: Student?
     
@@ -19,24 +19,41 @@ class AccountingTableViewController: UITableViewController {
     
     private var startScreenLabel: UILabel?
     
+    var selectedYear: String = ""
+    
+    let titleLabel = UILabel()
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.lightGray // Установите желаемый цвет разделителя
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        tableView.separatorColor = UIColor.clear
         
         // Выполните операции с UITableView здесь
         tableView.reloadData()
         
         setupStartScreenLabel()
         updateStartScreenLabelVisibility()
+        
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.register(StudentTableViewCell.self, forCellReuseIdentifier: "StudentCell")
+        view.backgroundColor = UIColor.systemGroupedBackground
+        
+        // Paid Months Label
+        view.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
+            make.centerX.equalToSuperview()
+        }
+        titleLabel.text = "Students Accounting"
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
+        
+        tableView.register(AccountingTableViewCell.self, forCellReuseIdentifier: "StudentCell")
+        
         self.tableView.estimatedRowHeight = 100
         self.tableView.rowHeight = UITableView.automaticDimension
         
@@ -73,7 +90,7 @@ class AccountingTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "StudentCell", for: indexPath) as! StudentTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "StudentCell", for: indexPath) as! AccountingTableViewCell
         let student = students[indexPath.row]
         cell.configure(with: student, image: student.imageForCell)
         
@@ -85,17 +102,30 @@ class AccountingTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let monthsVC = MonthsTableViewController()
-        //        monthsVC.delegate = self
         let student = students[indexPath.row]
         monthsVC.student = student
+        // Создайте строку для представления цены и валюты
+        let lessonPriceString = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
+        monthsVC.lessonPrice = lessonPriceString
         monthsVC.paidMonths = student.paidMonths
-        //        studentDetailVC.lessonsForStudent = student.lessons
+        monthsVC.selectedYear = student.paidMonths.first?.year ?? ""
+        monthsVC.schedules = student.schedule
+        monthsVC.lessonsForStudent = student.lessons
+        monthsVC.studentType = student.type
         
-        print("student in didSelectRowAt from StudentsTableViewController \(student.schedule)")
+        monthsVC.delegate = self
+
+        
         navigationController?.pushViewController(monthsVC, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
+    }
+    
+    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
+        StudentStore.shared.updateStudent(updatedStudent)
+        self.selectedYear = selectedYear
+        tableView.reloadData()
     }
 }

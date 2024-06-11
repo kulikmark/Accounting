@@ -69,7 +69,6 @@ extension StudentCardViewController {
         weekdaysPickerController.view.snp.makeConstraints { make in
             make.width.equalTo(400)
             make.height.equalTo(300)
-            
         }
     }
     
@@ -128,23 +127,62 @@ extension StudentCardViewController {
     // MARK: - Helper Methods
     
     // Обновление текстового поля с расписанием
+//    func updateScheduleTextField() {
+//        var scheduleStrings = [String]()
+//        
+//        switch editMode {
+//        case .add:
+//            // Сортируем выбранные расписания по дням недели перед отображением
+//            let sortedSchedules = selectedSchedules.sorted { $0.weekday < $1.weekday }
+//            scheduleStrings = sortedSchedules.map { "\($0.weekday) \($0.time)" }
+//        case .edit:
+//            let selectedScheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
+//            let studentScheduleStrings = student?.schedule.map { "\($0.weekday) \($0.time)" } ?? []
+//            scheduleStrings = (studentScheduleStrings + selectedScheduleStrings)
+//                .sorted { $0 < $1 } // Сортируем все расписания по дням недели перед отображением
+//        }
+//        
+//        let scheduleText = scheduleStrings.joined(separator: ", ")
+//        scheduleTextField.text = scheduleText
+//    }
+    
     func updateScheduleTextField() {
         var scheduleStrings = [String]()
         
         switch editMode {
         case .add:
-            scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
+            // Отсортируйте выбранные расписания по дням недели перед отображением
+            let sortedSchedules = selectedSchedules.sorted { orderOfDay($0.weekday) < orderOfDay($1.weekday) }
+            scheduleStrings = sortedSchedules.map { "\($0.weekday) \($0.time)" }
         case .edit:
-            let selectedScheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
-            let studentScheduleStrings = student?.schedule.map { "\($0.weekday) \($0.time)" } ?? []
-            scheduleStrings = studentScheduleStrings + selectedScheduleStrings
+            // Преобразуйте расписание ученика к формату [(weekday: String, time: String)]
+            let studentSchedules = student?.schedule.map { ($0.weekday, $0.time) } ?? []
+            
+            // Объедините выбранные пользователем расписания и расписание ученика
+            let allSchedules = studentSchedules + selectedSchedules
+            
+            // Отсортируйте все расписания по дням недели перед отображением
+            scheduleStrings = allSchedules.sorted { orderOfDay($0.0) < orderOfDay($1.0) }.map { "\($0.0) \($0.1)" }
         }
         
         let scheduleText = scheduleStrings.joined(separator: ", ")
         scheduleTextField.text = scheduleText
     }
 
-    
+    func orderOfDay(_ weekday: String) -> Int {
+        switch weekday {
+        case "MON": return 0
+        case "TUE": return 1
+        case "WED": return 2
+        case "THU": return 3
+        case "FRI": return 4
+        case "SAT": return 5
+        case "SUN": return 6
+        default: return 7 // Для непредвиденных случаев
+        }
+    }
+
+
     func showDeleteScheduleAlert() {
         let alert = UIAlertController(title: "Select the day of the week and the time to delete", message: nil, preferredStyle: .actionSheet)
         

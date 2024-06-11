@@ -18,6 +18,13 @@ class PaidMonthCell: UITableViewCell {
         return stackview
     }()
     
+//    // Метка для отображения выбранного года
+//       let yearLabel: UILabel = {
+//           let label = UILabel()
+//           label.text = "Year"
+//           return label
+//       }()
+    
     // Метка для отображения текста "Оплачен"
     let paidLabel: UILabel = {
         let label = UILabel()

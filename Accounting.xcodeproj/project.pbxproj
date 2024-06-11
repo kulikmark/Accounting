@@ -20,6 +20,10 @@
 		6D05813C2BD2A36B00130439 /* StudentCardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D05813B2BD2A36B00130439 /* StudentCardViewController.swift */; };
 		6D05813E2BD9175300130439 /* PaidMonthCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D05813D2BD9175300130439 /* PaidMonthCell.swift */; };
 		6D05814B2BDFF5B200130439 /* MonthsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D05814A2BDFF5B200130439 /* MonthsTableViewController.swift */; };
+		6D2B9B7D2C0FD969003B6AF4 /* LessonDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B9B7C2C0FD969003B6AF4 /* LessonDetailsViewController.swift */; };
+		6D2B9B802C131622003B6AF4 /* MonthLessonsSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B9B7F2C131622003B6AF4 /* MonthLessonsSetupUI.swift */; };
+		6D2B9B822C131707003B6AF4 /* MonthsTableSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B9B812C131707003B6AF4 /* MonthsTableSetupUI.swift */; };
+		6D2B9B842C1385C2003B6AF4 /* HomeWorkTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B9B832C1385C2003B6AF4 /* HomeWorkTableViewCell.swift */; };
 		6D5A1A1E2C073F0400065DF7 /* HomeWorkTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A1D2C073F0400065DF7 /* HomeWorkTableViewController.swift */; };
 		6D5A1A202C07D4B700065DF7 /* StudentCardSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A1F2C07D4B700065DF7 /* StudentCardSetupUI.swift */; };
 		6D5A1A222C07D59500065DF7 /* UIImagePickerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A212C07D59500065DF7 /* UIImagePickerControllerDelegate.swift */; };
@@ -28,6 +32,11 @@
 		6D5A1A282C07DBD800065DF7 /* AccountingTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A272C07DBD800065DF7 /* AccountingTableViewController.swift */; };
 		6D5A1A2A2C07E73800065DF7 /* StudentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A292C07E73800065DF7 /* StudentStore.swift */; };
 		6D5A1A2C2C0800F400065DF7 /* KeyboardWork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A2B2C0800F400065DF7 /* KeyboardWork.swift */; };
+		6D5A1A2E2C0E73C000065DF7 /* AccountingTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A2D2C0E73C000065DF7 /* AccountingTableViewCell.swift */; };
+		6D5A1A302C0E7FAA00065DF7 /* SavingConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A2F2C0E7FAA00065DF7 /* SavingConfirmation.swift */; };
+		6D5A1A322C0E85B100065DF7 /* TextFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A312C0E85B100065DF7 /* TextFormatter.swift */; };
+		6D6B0EF22C14601100F0DEBF /* ExpendedFooterTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6B0EF12C14601100F0DEBF /* ExpendedFooterTableView.swift */; };
+		6DCED48E2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCED48D2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +53,10 @@
 		6D05813B2BD2A36B00130439 /* StudentCardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardViewController.swift; sourceTree = "<group>"; };
 		6D05813D2BD9175300130439 /* PaidMonthCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaidMonthCell.swift; sourceTree = "<group>"; };
 		6D05814A2BDFF5B200130439 /* MonthsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsTableViewController.swift; sourceTree = "<group>"; };
+		6D2B9B7C2C0FD969003B6AF4 /* LessonDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonDetailsViewController.swift; sourceTree = "<group>"; };
+		6D2B9B7F2C131622003B6AF4 /* MonthLessonsSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthLessonsSetupUI.swift; sourceTree = "<group>"; };
+		6D2B9B812C131707003B6AF4 /* MonthsTableSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsTableSetupUI.swift; sourceTree = "<group>"; };
+		6D2B9B832C1385C2003B6AF4 /* HomeWorkTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWorkTableViewCell.swift; sourceTree = "<group>"; };
 		6D5A1A1D2C073F0400065DF7 /* HomeWorkTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWorkTableViewController.swift; sourceTree = "<group>"; };
 		6D5A1A1F2C07D4B700065DF7 /* StudentCardSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardSetupUI.swift; sourceTree = "<group>"; };
 		6D5A1A212C07D59500065DF7 /* UIImagePickerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImagePickerControllerDelegate.swift; sourceTree = "<group>"; };
@@ -52,6 +65,11 @@
 		6D5A1A272C07DBD800065DF7 /* AccountingTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountingTableViewController.swift; sourceTree = "<group>"; };
 		6D5A1A292C07E73800065DF7 /* StudentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentStore.swift; sourceTree = "<group>"; };
 		6D5A1A2B2C0800F400065DF7 /* KeyboardWork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardWork.swift; sourceTree = "<group>"; };
+		6D5A1A2D2C0E73C000065DF7 /* AccountingTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountingTableViewCell.swift; sourceTree = "<group>"; };
+		6D5A1A2F2C0E7FAA00065DF7 /* SavingConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingConfirmation.swift; sourceTree = "<group>"; };
+		6D5A1A312C0E85B100065DF7 /* TextFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFormatter.swift; sourceTree = "<group>"; };
+		6D6B0EF12C14601100F0DEBF /* ExpendedFooterTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpendedFooterTableView.swift; sourceTree = "<group>"; };
+		6DCED48D2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWorkPaidMonthsCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,10 +109,10 @@
 			isa = PBXGroup;
 			children = (
 				6D0581172BCA84AD00130439 /* AppDelegate.swift */,
+				6D0581192BCA84AD00130439 /* SceneDelegate.swift */,
 				6D0581222BCA84AF00130439 /* LaunchScreen.storyboard */,
 				6D0581252BCA84AF00130439 /* Info.plist */,
 				6D0581202BCA84AF00130439 /* Assets.xcassets */,
-				6D0581192BCA84AD00130439 /* SceneDelegate.swift */,
 			);
 			path = Accounting;
 			sourceTree = "<group>";
@@ -111,8 +129,10 @@
 		6D0581342BD1639400130439 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				6D05812F2BCFBFBA00130439 /* StudentTableViewCell.swift */,
-				6D05813D2BD9175300130439 /* PaidMonthCell.swift */,
+				6D5A1A1F2C07D4B700065DF7 /* StudentCardSetupUI.swift */,
+				6D2B9B812C131707003B6AF4 /* MonthsTableSetupUI.swift */,
+				6D2B9B7F2C131622003B6AF4 /* MonthLessonsSetupUI.swift */,
+				6D2B9B7E2C1315E9003B6AF4 /* Cells */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -125,6 +145,7 @@
 				6D5A1A272C07DBD800065DF7 /* AccountingTableViewController.swift */,
 				6D05814A2BDFF5B200130439 /* MonthsTableViewController.swift */,
 				6D05812D2BCF182700130439 /* MonthLessonsViewController.swift */,
+				6D2B9B7C2C0FD969003B6AF4 /* LessonDetailsViewController.swift */,
 				6D5A1A1D2C073F0400065DF7 /* HomeWorkTableViewController.swift */,
 			);
 			path = Controllers;
@@ -133,13 +154,27 @@
 		6D0581412BD9782F00130439 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				6D5A1A1F2C07D4B700065DF7 /* StudentCardSetupUI.swift */,
 				6D5A1A232C07D60E00065DF7 /* StudentCardScheduleSelection.swift */,
 				6D5A1A212C07D59500065DF7 /* UIImagePickerControllerDelegate.swift */,
 				6D5A1A252C07D81E00065DF7 /* StudentCardPhotoChoosingPermission.swift */,
 				6D5A1A2B2C0800F400065DF7 /* KeyboardWork.swift */,
+				6D5A1A2F2C0E7FAA00065DF7 /* SavingConfirmation.swift */,
+				6D5A1A312C0E85B100065DF7 /* TextFormatter.swift */,
+				6D6B0EF12C14601100F0DEBF /* ExpendedFooterTableView.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		6D2B9B7E2C1315E9003B6AF4 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				6D05812F2BCFBFBA00130439 /* StudentTableViewCell.swift */,
+				6D5A1A2D2C0E73C000065DF7 /* AccountingTableViewCell.swift */,
+				6D05813D2BD9175300130439 /* PaidMonthCell.swift */,
+				6D2B9B832C1385C2003B6AF4 /* HomeWorkTableViewCell.swift */,
+				6DCED48D2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -219,19 +254,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D5A1A302C0E7FAA00065DF7 /* SavingConfirmation.swift in Sources */,
 				6D5A1A282C07DBD800065DF7 /* AccountingTableViewController.swift in Sources */,
 				6D5A1A2A2C07E73800065DF7 /* StudentStore.swift in Sources */,
+				6D5A1A2E2C0E73C000065DF7 /* AccountingTableViewCell.swift in Sources */,
 				6D0581322BD1633400130439 /* StudentModel.swift in Sources */,
 				6D05812E2BCF182700130439 /* MonthLessonsViewController.swift in Sources */,
 				6D05814B2BDFF5B200130439 /* MonthsTableViewController.swift in Sources */,
 				6D5A1A222C07D59500065DF7 /* UIImagePickerControllerDelegate.swift in Sources */,
 				6D5A1A2C2C0800F400065DF7 /* KeyboardWork.swift in Sources */,
 				6D5A1A262C07D81E00065DF7 /* StudentCardPhotoChoosingPermission.swift in Sources */,
+				6DCED48E2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift in Sources */,
 				6D05813C2BD2A36B00130439 /* StudentCardViewController.swift in Sources */,
 				6D05813E2BD9175300130439 /* PaidMonthCell.swift in Sources */,
+				6D6B0EF22C14601100F0DEBF /* ExpendedFooterTableView.swift in Sources */,
+				6D2B9B802C131622003B6AF4 /* MonthLessonsSetupUI.swift in Sources */,
+				6D2B9B842C1385C2003B6AF4 /* HomeWorkTableViewCell.swift in Sources */,
 				6D5A1A202C07D4B700065DF7 /* StudentCardSetupUI.swift in Sources */,
 				6D0581182BCA84AD00130439 /* AppDelegate.swift in Sources */,
+				6D2B9B822C131707003B6AF4 /* MonthsTableSetupUI.swift in Sources */,
+				6D2B9B7D2C0FD969003B6AF4 /* LessonDetailsViewController.swift in Sources */,
 				6D05811A2BCA84AD00130439 /* SceneDelegate.swift in Sources */,
+				6D5A1A322C0E85B100065DF7 /* TextFormatter.swift in Sources */,
 				6D05812C2BCA855700130439 /* StudentsTableViewController.swift in Sources */,
 				6D5A1A1E2C073F0400065DF7 /* HomeWorkTableViewController.swift in Sources */,
 				6D0581302BCFBFBA00130439 /* StudentTableViewCell.swift in Sources */,

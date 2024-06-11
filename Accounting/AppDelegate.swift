@@ -13,30 +13,74 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //    var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        // Создание окна
-//        window = UIWindow(frame: UIScreen.main.bounds)
-//        
-//        // Создание экземпляра StudentsTableViewController и MonthsTableViewController
-//        let studentsTableViewController = StudentsTableViewController()
-//        let monthsTableViewController = MonthsTableViewController()
-//        
-//        // Оберните их в UINavigationController
-//        let studentsNavController = UINavigationController(rootViewController: studentsTableViewController)
-//        let monthsNavController = UINavigationController(rootViewController: monthsTableViewController)
-//        
-//        // Создайте UITabBarController и добавьте в него UINavigationController'ы
-//        let tabBarController = UITabBarController()
-//        tabBarController.viewControllers = [studentsNavController, monthsNavController]
-//        
-//        // Настройте табы
-//        studentsNavController.tabBarItem = UITabBarItem(tabBarSystemItem: .favorites, tag: 0)
-//        monthsNavController.tabBarItem = UITabBarItem(tabBarSystemItem: .contacts, tag: 1)
-//        
-//        // Назначение UITabBarController корневым контроллером
-//        window?.rootViewController = tabBarController
-//        
-//        // Отображение окна
-//        window?.makeKeyAndVisible()
+        
+        // Создаем тестовое расписание для ученика
+            let testSchedule1 = [
+                Schedule(weekday: "WED", time: "12:00")
+            ]
+        
+        let testSchedule2 = [
+            Schedule(weekday: "WED", time: "12:00")
+        ]
+        
+        let lessonPrice = LessonPrice(price: "100", currency: "GBP")
+        
+        let paidMonth = [PaidMonth(year: "2024", month: "June", isPaid: true),
+            PaidMonth(year: "2024", month: "July", isPaid: false),
+        PaidMonth(year: "2024", month: "August", isPaid: false),
+                         PaidMonth(year: "2024", month: "September", isPaid: false),
+                         PaidMonth(year: "2024", month: "October", isPaid: false),
+                         PaidMonth(year: "2024", month: "November", isPaid: false),
+                         PaidMonth(year: "2024", month: "December", isPaid: false)]
+        
+//        let lesson = Lesson(date: "2024.06.05", attended: false, homework: "HW")
+            
+            // Создаем тестового ученика с этим расписанием
+            let testStudent = Student(
+                id: UUID(),
+                name: "Harry Potter",
+                parentName: "Petunia Dursley",
+                phoneNumber: "+44-7871256566",
+                paidMonths: paidMonth,
+                lessonPrice: lessonPrice,
+                lessons: [:],
+                schedule: testSchedule1,
+                type: .schoolchild,
+                image: UIImage(named: "harry")?.squareImage()
+            )
+        
+        // Создаем тестового ученика с этим расписанием
+        let testStudent2 = Student(
+            id: UUID(),
+            name: "Ron Weasley",
+            parentName: "Molly Weasley",
+            phoneNumber: "+44-7871234567",
+            paidMonths: [],
+            lessonPrice: lessonPrice,
+            lessons: [:],
+            schedule: testSchedule2,
+            type: .schoolchild,
+            image: UIImage(named: "ron")?.squareImage()
+        )
+        
+        // Создаем тестового ученика с этим расписанием
+        let testStudent3 = Student(
+            id: UUID(),
+            name: "Hermione Granger",
+            parentName: "",
+            phoneNumber: "+44-7871234231",
+            paidMonths: [],
+            lessonPrice: lessonPrice,
+            lessons: [:],
+            schedule: [],
+            type: .schoolchild,
+            image: UIImage(named: "hermione")?.squareImage()
+        )
+            
+        // Добавляем тестового ученика в модель данных
+           StudentStore.shared.addStudent(testStudent)
+        StudentStore.shared.addStudent(testStudent2)
+        StudentStore.shared.addStudent(testStudent3)
         
         // Возвращаемое значение true означает успешное завершение метода didFinishLaunchingWithOptions
         return true

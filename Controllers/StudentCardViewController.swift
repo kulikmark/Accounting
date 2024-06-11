@@ -26,21 +26,33 @@ class StudentCardViewController: UIViewController {
     
     // MARK: - Properties
     
+    var student: Student?
+    var editMode: EditMode
     weak var delegate: StudentCardDelegate?
     
-    var student: Student?
+    // Add a segmented control for student type
+    let studentTypeSegmentedControl: UISegmentedControl = {
+        let items = ["Schoolchild", "Adult"]
+        let control = UISegmentedControl(items: items)
+        control.selectedSegmentIndex = 0
+        return control
+    }()
     
     var paidMonths = [PaidMonth]()
-
+    
     var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
     
     let studentNameTextField = UITextField()
     let studentNameLabel = UILabel()
+    let parentNameTextField = UITextField()
+    let parentNameLabel = UILabel()
     let phoneTextField = UITextField()
     let phoneLabel = UILabel()
     let lessonPriceLabel = UITextField()
     let lessonPriceTextField = UITextField()
+    let currencyLabel = UILabel()
+    let currencyTextField = UITextField()
     let scheduleTextField = UITextField()
     let scheduleLabel = UILabel()
     
@@ -48,10 +60,25 @@ class StudentCardViewController: UIViewController {
     
     let imagePicker = UIImagePickerController()
     
-    var editMode: EditMode // Добавляем свойство для хранения текущего режима
+    var lessonPriceValue: Double?
+    var enteredPrice: Double?
+    var enteredCurrency: String?
     
     
     // MARK: - View Lifecycle
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        updateScheduleTextField()
+        
+        // Повторно проверяем выбранный индекс и скрываем поля, если необходимо
+        if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
+            parentNameLabel.isHidden = true
+            parentNameTextField.isHidden = true
+        }
+        
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,22 +87,51 @@ class StudentCardViewController: UIViewController {
         // Добавляем вызов метода updateScheduleTextField() для обновления расписания при открытии в режиме редактирования
         updateScheduleTextField()
         
-        view.backgroundColor = .white
         
-        //        self.navigationController?.navigationBar.topItem?.title = "Назад"
+        view.backgroundColor = UIColor.systemGroupedBackground
+        
+        //        // Заменяем кнопку "Back" на кастомную кнопку
+        //        let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
+        //        navigationItem.leftBarButtonItem = backButton
         
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
         
         // Добавляем жест для скрытия клавиатуры при тапе вне текстовых полей
-           let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
-           view.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
+        view.addGestureRecognizer(tapGesture)
+        
+        // Добавляем обработчик изменений в UISegmentedControl
+            studentTypeSegmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+        
+        // Повторно проверяем выбранный индекс и скрываем поля, если необходимо
+        if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
+            parentNameLabel.isHidden = true
+            parentNameTextField.isHidden = true
+        }
+        
     }
     
+    // Метод для обработки изменений в UISegmentedControl
+    @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
+        // Проверяем выбранный индекс и скрываем или отображаем соответствующие поля
+        switch sender.selectedSegmentIndex {
+        case 0:
+            parentNameLabel.isHidden = false
+            parentNameTextField.isHidden = false
+        case 1:
+            parentNameLabel.isHidden = true
+            parentNameTextField.isHidden = true
+        default:
+            break
+        }
+    }
+    
+    
     // Функция для скрытия клавиатуры при тапе вне текстовых полей
-       @objc private func hideKeyboardOnTap() {
-           view.endEditing(true)
-       }
+    @objc private func hideKeyboardOnTap() {
+        view.endEditing(true)
+    }
     
     init(editMode: EditMode, delegate: StudentCardDelegate?) {
         self.editMode = editMode
@@ -100,9 +156,10 @@ class StudentCardViewController: UIViewController {
     
     // MARK: - Actions
     
-    @objc private func saveButtonTapped() {
+    @objc internal func saveButtonTapped() {
+        
         // Скрыть клавиатуру перед сохранением
-         view.endEditing(true)
+        view.endEditing(true)
         
         if let existingStudent = student {
             saveStudent(existingStudent, mode: .edit)
@@ -113,17 +170,69 @@ class StudentCardViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
+    @objc private func backButtonTapped() {
+        
+    }
+    
     private func saveStudent(_ existingStudent: Student?, mode: EditMode) {
         // Determine student ID, using existing ID if available, otherwise generate a new UUID
         let studentID = existingStudent?.id ?? UUID()
         
-        // Extract student name from text field, defaulting to an empty string if text field is empty
-        let studentName = studentNameTextField.text ?? ""
+        // Student type
+           let studentTypeIndex = studentTypeSegmentedControl.selectedSegmentIndex
+           let studentType: StudentType = studentTypeIndex == 0 ? .schoolchild : .adult
+           
+           
+        // Extract student name from text field, defaulting to nil if text field is empty
+        guard let studentName = studentNameTextField.text, !studentName.isEmpty else {
+            displayErrorAlert(message: "Student's name cannot be empty")
+            return
+        }
         
-        // Extract phone number from text field, defaulting to an empty string if text field is empty
-        let phoneNumber = phoneTextField.text ?? ""
+        // Extract Parent name from text field, defaulting to nil if text field is empty
+        guard let parentName = parentNameTextField.text, !parentName.isEmpty || studentTypeIndex == 1 else {
+            displayErrorAlert(message: "Parent's name cannot be empty for adult students")
+            return
+        }
         
-        let lessonPrice = lessonPriceTextField.text ?? ""
+        // Extract phone number from text field, defaulting to nil if text field is empty
+        guard let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
+            displayErrorAlert(message: "Phone number cannot be empty")
+            return
+        }
+        
+        guard let lessonPriceText = lessonPriceTextField.text, !lessonPriceText.isEmpty else {
+            displayErrorAlert(message: "Please enter a valid lesson price")
+            return
+        }
+        
+        // Convert the lesson price text to a Double, replacing commas with dots if necessary
+        let formattedLessonPriceText = lessonPriceText.replacingOccurrences(of: ",", with: ".")
+        guard let lessonPriceValue = Double(formattedLessonPriceText) else {
+            displayErrorAlert(message: "Invalid lesson price")
+            return
+        }
+        
+        // Extract currency from currency text field, defaulting to nil if text field is empty
+        guard let currency = currencyTextField.text, !currency.isEmpty else {
+            displayErrorAlert(message: "Currency cannot be empty")
+            return
+        }
+        
+        let newLessonPrice = LessonPrice(price: String(format: "%.2f", lessonPriceValue), currency: currency)
+        
+        
+        // Check if the selectedSchedules is empty and mode is add
+        if selectedSchedules.isEmpty && self.editMode == .add {
+            // Display an alert if there are no schedules selected
+            displayErrorAlert(message: "You need to add a schedule")
+        }
+        
+        // Check if mode is edit and both selectedSchedules and existing student's schedules are empty
+        if self.editMode == .edit && selectedSchedules.isEmpty && (self.student?.schedule.isEmpty ?? true) {
+            // Display an alert if there are no schedules selected and no existing schedules
+            displayErrorAlert(message: "You need to add a schedule")
+        }
         
         // Use selectedSchedules only in 'add' mode
         var updatedSchedule: [Schedule] = mode == .add ? selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) } : existingStudent?.schedule ?? []
@@ -134,19 +243,55 @@ class StudentCardViewController: UIViewController {
         }
         
         // Create an updated student object with the gathered information
+//        let updatedStudent = Student(
+//            id: studentID,
+//            name: studentName,
+//            parentName: parentName,
+//            phoneNumber: phoneNumber,
+//            paidMonths: existingStudent?.paidMonths ?? paidMonths,
+//            lessonPrice: newLessonPrice,
+//            lessons: [:],
+//            schedule: updatedSchedule,
+//            type: studentType,
+//            image: selectedImage ?? existingStudent?.imageForCell
+//        )
+        
         let updatedStudent = Student(
             id: studentID,
-            name: studentName,
-            phoneNumber: phoneNumber,
-            paidMonths: paidMonths,
-            lessonPrice: lessonPrice,
-            lessons: [:],
-            schedule: updatedSchedule,
+            name: existingStudent?.name ?? "",
+            parentName: existingStudent?.parentName ?? "",
+            phoneNumber: existingStudent?.phoneNumber ?? "",
+            paidMonths: existingStudent?.paidMonths ?? [],
+            lessonPrice: existingStudent?.lessonPrice ?? newLessonPrice,
+            lessons: existingStudent?.lessons ?? [:],
+            schedule: existingStudent?.schedule ?? [],
+            type: studentType,
             image: selectedImage ?? existingStudent?.imageForCell
         )
         
         // Notify the delegate about the creation or update of the student, passing the updated student and selected image if available
         delegate?.didCreateStudent(updatedStudent, withImage: selectedImage)
     }
+    
+    private func displayErrorAlert(message: String) {
+        let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        present(alertController, animated: true)
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == lessonPriceTextField {
+            // Ensure there's only one decimal separator
+            let currentText = textField.text ?? ""
+            if currentText.contains(",") && string.contains(",") {
+                return false
+            }
+            // Allow only digits and comma
+            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        }
+        return true
+    }
 }
-

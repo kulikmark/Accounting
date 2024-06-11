@@ -7,6 +7,14 @@
 
 import UIKit
 
+protocol KeyboardHandling: AnyObject {
+    var activeTextField: UITextField? { get }
+    func registerForKeyboardNotifications()
+    func unregisterForKeyboardNotifications()
+    func keyboardWillShow(notification: Notification)
+    func keyboardWillHide(notification: Notification)
+}
+
 // MARK: - Keyboard Handling
 
 extension StudentCardViewController {
@@ -32,6 +40,8 @@ extension StudentCardViewController {
             return phoneTextField
         } else if lessonPriceTextField.isFirstResponder {
             return lessonPriceTextField
+        } else if currencyTextField.isFirstResponder {
+            return currencyTextField
         } else if scheduleTextField.isFirstResponder {
             return scheduleTextField
         }
@@ -76,6 +86,8 @@ extension StudentCardViewController: UITextFieldDelegate {
             lessonPriceTextField.becomeFirstResponder()
         case lessonPriceTextField:
             lessonPriceTextField.resignFirstResponder()
+        case currencyTextField:
+            currencyTextField.resignFirstResponder()
         default:
             break
         }

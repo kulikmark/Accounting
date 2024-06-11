@@ -13,14 +13,12 @@ class StudentsTableViewController: UITableViewController {
     var student: Student?
     
     var students: [Student] {
-            get {
-                return StudentStore.shared.students
-            }
-            set {
-                StudentStore.shared.students = newValue
-                updateStartScreenLabelVisibility()
-            }
-        }
+           return StudentStore.shared.students
+       }
+    
+    var selectedYear: String = ""
+    
+    private let titleLabel = UILabel()
     
        private var startScreenLabel: UILabel?
     
@@ -28,17 +26,24 @@ class StudentsTableViewController: UITableViewController {
         super.viewDidAppear(animated)
         
         tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.lightGray // Установите желаемый цвет разделителя
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        tableView.separatorColor = UIColor.clear
         
         // Выполните операции с UITableView здесь
         tableView.reloadData()
-        
-        print("\(students.count)")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = UIColor.systemGroupedBackground
+        
+        view.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
+            make.centerX.equalToSuperview()
+        }
+        titleLabel.text = "Students List"
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
    
         tableView.register(StudentTableViewCell.self, forCellReuseIdentifier: "StudentCell")
         
@@ -46,14 +51,11 @@ class StudentsTableViewController: UITableViewController {
         self.navigationItem.rightBarButtonItem = self.editButtonItem
         
         
-        self.tableView.estimatedRowHeight = 100 // Установите приблизительную оценку высоты ячейки
+        self.tableView.estimatedRowHeight = 300 // Установите приблизительную оценку высоты ячейки
         self.tableView.rowHeight = UITableView.automaticDimension
         
         setupStartScreenLabel()
         updateStartScreenLabelVisibility()
-        
-        print("\(students.count)")
-        
     }
     
     private func setupStartScreenLabel() {
@@ -98,8 +100,7 @@ class StudentsTableViewController: UITableViewController {
         studentCardVC.delegate = self
         let student = students[indexPath.row]
         studentCardVC.student = student
-        studentCardVC.paidMonths = student.paidMonths
-//        studentDetailVC.lessonsForStudent = student.lessons
+//        studentCardVC.paidMonths = student.paidMonths
         
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
@@ -125,9 +126,10 @@ class StudentsTableViewController: UITableViewController {
     }
     
     func deleteStudent(at indexPath: IndexPath) {
-        students.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .fade)
-    }
+            StudentStore.shared.removeStudent(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            updateStartScreenLabelVisibility()
+        }
     
     // MARK: - Actions
     
@@ -144,24 +146,32 @@ class StudentsTableViewController: UITableViewController {
 extension StudentsTableViewController: StudentCardDelegate {
     
     func didCreateStudent(_ existingStudent: Student, withImage: UIImage?) {
-        
-            if let index = students.firstIndex(where: { $0.id == existingStudent.id }) {
-                // Если ученик уже существует в массиве, обновляем его
-                students[index] = existingStudent
-                
-                // Перезагружаем только соответствующую ячейку в таблице
-                let indexPath = IndexPath(row: index, section: 0)
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-            } else {
-                // Если ученик не существует в массиве, добавляем его
-                students.append(existingStudent)
-                
-                // Вставляем новую строку в таблицу
-                tableView.insertRows(at: [IndexPath(row: students.count - 1, section: 0)], with: .automatic)
-                
-                // Перезагружаем таблицу, чтобы обновить emptyLabel
-                
-                tableView.reloadData()
-            }
+        if let index = students.firstIndex(where: { $0.id == existingStudent.id }) {
+            StudentStore.shared.updateStudent(existingStudent)
+            let indexPath = IndexPath(row: index, section: 0)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        } else {
+            StudentStore.shared.addStudent(existingStudent)
+            tableView.insertRows(at: [IndexPath(row: students.count - 1, section: 0)], with: .automatic)
+        }
+        updateStartScreenLabelVisibility()
+    }
+}
+
+// MARK: - MonthsTableViewControllerDelegate
+
+extension StudentsTableViewController: MonthsTableViewControllerDelegate {
+    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
+        StudentStore.shared.updateStudent(updatedStudent)
+        self.selectedYear = selectedYear
+        tableView.reloadData()
+    }
+    
+    func didUpdateStudent(_ updatedStudent: Student) {
+        if let index = students.firstIndex(where: { $0.id == updatedStudent.id }) {
+            StudentStore.shared.updateStudent(updatedStudent)
+            let indexPath = IndexPath(row: index, section: 0)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
     }
+}
