@@ -7,28 +7,18 @@
 
 import UIKit
 
-// Контроллер таблицы учеников
 class StudentsTableViewController: UITableViewController {
     
     var student: Student?
-    
     var students: [Student] {
            return StudentStore.shared.students
        }
-    
     var selectedYear: String = ""
-    
-    private let titleLabel = UILabel()
-    
-       private var startScreenLabel: UILabel?
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor.clear
-        
-        // Выполните операции с UITableView здесь
         tableView.reloadData()
     }
     
@@ -36,47 +26,16 @@ class StudentsTableViewController: UITableViewController {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor.systemGroupedBackground
-        
-        view.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
-            make.centerX.equalToSuperview()
-        }
-        titleLabel.text = "Students List"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
-   
+        self.title = "Students List"
         tableView.register(StudentTableViewCell.self, forCellReuseIdentifier: "StudentCell")
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewStudent))
         self.navigationItem.rightBarButtonItem = self.editButtonItem
         
-        
-        self.tableView.estimatedRowHeight = 300 // Установите приблизительную оценку высоты ячейки
+        self.tableView.estimatedRowHeight = 100
         self.tableView.rowHeight = UITableView.automaticDimension
-        
-        setupStartScreenLabel()
-        updateStartScreenLabelVisibility()
+        setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
     }
-    
-    private func setupStartScreenLabel() {
-        startScreenLabel = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: tableView.bounds.size.height))
-        startScreenLabel?.text = "Add first student \n\n Tap + in the left corner of the screen"
-        startScreenLabel?.font = UIFont.systemFont(ofSize: 20)
-        startScreenLabel?.textColor = .lightGray
-        startScreenLabel?.textAlignment = .center
-        startScreenLabel?.numberOfLines = 0
-            tableView.backgroundView = startScreenLabel
-        }
-
-        private func updateStartScreenLabelVisibility() {
-            if students.isEmpty {
-                startScreenLabel?.isHidden = false
-                tableView.separatorStyle = .none
-            } else {
-                startScreenLabel?.isHidden = true
-                tableView.separatorStyle = .singleLine
-            }
-        }
     
     // MARK: - Table view data source
     
@@ -100,7 +59,6 @@ class StudentsTableViewController: UITableViewController {
         studentCardVC.delegate = self
         let student = students[indexPath.row]
         studentCardVC.student = student
-//        studentCardVC.paidMonths = student.paidMonths
         
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
@@ -128,7 +86,8 @@ class StudentsTableViewController: UITableViewController {
     func deleteStudent(at indexPath: IndexPath) {
             StudentStore.shared.removeStudent(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
-            updateStartScreenLabelVisibility()
+//            updateStartScreenLabelVisibility()
+        setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
         }
     
     // MARK: - Actions
@@ -154,7 +113,7 @@ extension StudentsTableViewController: StudentCardDelegate {
             StudentStore.shared.addStudent(existingStudent)
             tableView.insertRows(at: [IndexPath(row: students.count - 1, section: 0)], with: .automatic)
         }
-        updateStartScreenLabelVisibility()
+        setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
     }
 }
 

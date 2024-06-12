@@ -42,6 +42,13 @@ extension StudentCardViewController {
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         actionSheet.addAction(cancelAction)
         
+        // Configure popover presentation for iPad
+           if let popoverController = actionSheet.popoverPresentationController {
+               popoverController.sourceView = self.view
+               popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+               popoverController.permittedArrowDirections = []
+           }
+        
         present(actionSheet, animated: true, completion: nil)
         
         actionSheet.view.snp.makeConstraints { make in
@@ -63,6 +70,13 @@ extension StudentCardViewController {
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         weekdaysPickerController.addAction(cancelAction)
+        
+        // Configure popover presentation for iPad
+          if let popoverController = weekdaysPickerController.popoverPresentationController {
+              popoverController.sourceView = self.view
+              popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+              popoverController.permittedArrowDirections = []
+          }
         
         present(weekdaysPickerController, animated: true, completion: nil)
         
@@ -107,6 +121,13 @@ extension StudentCardViewController {
         // Добавляем действия в UIAlertController
         timesPickerController.addAction(selectAction)
         timesPickerController.addAction(cancelAction)
+        
+        // Configure popover presentation for iPad
+          if let popoverController = timesPickerController.popoverPresentationController {
+              popoverController.sourceView = self.view
+              popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+              popoverController.permittedArrowDirections = []
+          }
         
         // Показываем UIAlertController
         present(timesPickerController, animated: true, completion: nil)

@@ -32,14 +32,6 @@ class AccountingTableViewCell: UITableViewCell {
         return label
     }()
     
-//    lazy var lessonPriceLabel: UILabel = {
-//        let label = UILabel()
-//        label.font = UIFont.systemFont(ofSize: 14)
-//        label.textColor = .darkGray
-//        label.numberOfLines = 1
-//        return label
-//    }()
-    
     lazy var lessonsQuantityLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
@@ -98,19 +90,23 @@ class AccountingTableViewCell: UITableViewCell {
             make.top.equalTo(profileImageView)
             make.leading.equalTo(profileImageView.snp.trailing).offset(23)
             make.trailing.equalToSuperview().offset(-10)
+            make.height.equalTo(25)
         }
         
         lessonsQuantityLabel.snp.makeConstraints { make in
             make.top.equalTo(studentNameLabel.snp.bottom).offset(5)
             make.leading.trailing.equalTo(studentNameLabel)
+            make.height.equalTo(16)
         }
-        
+
         moneySumLabel.snp.makeConstraints { make in
             make.top.equalTo(lessonsQuantityLabel.snp.bottom).offset(5)
             make.leading.trailing.equalTo(studentNameLabel)
-            make.height.equalToSuperview().offset(-10).priority(.low)
+            make.height.equalTo(16)
+//            make.height.equalToSuperview().offset(-10).priority(.low)
             make.bottom.lessThanOrEqualToSuperview().offset(-10)
         }
+
     }
     
     func configure(with student: Student, image: UIImage?) {
@@ -123,8 +119,6 @@ class AccountingTableViewCell: UITableViewCell {
         }
         
         studentNameLabel.text = student.name
-        
-//        let lessonPriceString = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
        
         // Вычисляем количество уроков
             let lessonsCount = Double(student.lessons.values.reduce(0) { $0 + $1.count })

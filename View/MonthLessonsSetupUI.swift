@@ -29,15 +29,6 @@ extension MonthLessonsViewController {
         // Присваиваем созданную таблицу свойству tableView
         self.tableView = tableView
         
-        // Add Title Label
-        view.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
-            make.centerX.equalToSuperview()
-        }
-        titleLabel.text = "Lessons List"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
-        
         // Add Scheduled Lessons Button
         view.addSubview(addScheduledLessonsButton)
         addScheduledLessonsButton.snp.makeConstraints { make in

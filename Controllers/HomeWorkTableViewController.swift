@@ -7,6 +7,7 @@
 
 
 import UIKit
+import Combine
 import SnapKit
 
 protocol HomeWorkTableViewControllerDelegate: AnyObject {
@@ -22,6 +23,7 @@ extension HomeWorkTableViewController: MonthsTableViewControllerDelegate {
 }
 
 class HomeWorkTableViewController: UITableViewController {
+    private var cancellables = Set<AnyCancellable>()
     
     weak var delegate: HomeWorkTableViewControllerDelegate?
     
@@ -44,54 +46,24 @@ class HomeWorkTableViewController: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        setupStartScreenLabel(with: "Add first student on the Students screen")
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor.clear
-        
-        // Выполните операции с UITableView здесь
         tableView.reloadData()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = UIColor.systemGroupedBackground
-        
-        setupTitleLabel()
+        self.title = "Homeworks List"
+        setupStartScreenLabel(with: "Add first student \n\n On the Students screen")
         tableView.register(HomeWorkTableViewCell.self, forCellReuseIdentifier: "HomeWorkTableViewCell")
         setupTableView()
-        setupStartScreenLabel()
-        updateStartScreenLabelVisibility()
-    }
-    
-    private func setupTitleLabel() {
-        view.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
-            make.centerX.equalToSuperview()
-        }
-        titleLabel.text = "Homeworks List"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
     }
     
     private func setupTableView() {
         tableView.estimatedRowHeight = 100
         tableView.rowHeight = UITableView.automaticDimension
-    }
-    
-    private func setupStartScreenLabel() {
-        startScreenLabel = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: tableView.bounds.size.height))
-        startScreenLabel?.text = "Add first student \n\n On the Students screen"
-        startScreenLabel?.font = UIFont.systemFont(ofSize: 20)
-        startScreenLabel?.textColor = .lightGray
-        startScreenLabel?.textAlignment = .center
-        startScreenLabel?.numberOfLines = 0
-        tableView.backgroundView = startScreenLabel
-    }
-    
-    private func updateStartScreenLabelVisibility() {
-        startScreenLabel?.isHidden = !students.isEmpty
-        tableView.separatorStyle = students.isEmpty ? .none : .singleLine
     }
     
     // MARK: - Table view data source

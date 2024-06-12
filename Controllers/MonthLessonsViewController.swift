@@ -49,36 +49,25 @@ protocol MonthLessonsDelegate: AnyObject {
 }
 
 class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveChangesHandling, LessonDetailDelegate {
-    
-    weak var delegate: MonthLessonsDelegate?
-    
     var student: Student?
-    
+    weak var delegate: MonthLessonsDelegate?
     var changesMade = false
-    
     var lessonPrice: String = ""
     var selectedMonth: String = ""
     var selectedYear: String = ""
-    
     var selectedSchedules = [(weekday: String, time: String)]()
-    
     // Добавим новое свойство для хранения расписания
     var schedule: [String] {
         var scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
         scheduleStrings.sort() // Сортируем расписание по дням недели и времени
         return scheduleStrings
     }
-    
     var temporaryLessons: [String: [Lesson]] = [:] // Список уроков для отображения
     var lessonsForStudent: [Lesson] = []
-    
     let addScheduledLessonsButton = UIButton(type: .system)
     let addLessonButton = UIButton(type: .system)
-    
     var tableView: UITableView? // Создаем свойство tableView
-    
     private let datePicker = UIDatePicker()
-    
     // Словарь для соответствия названий месяцев и их числовых представлений
     let monthDictionary: [String: String] = [
         "January": "01",
@@ -95,8 +84,6 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
         "December": "12"
     ]
     
-    let titleLabel = UILabel()
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // Настройка UI
@@ -108,6 +95,8 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
         // Настройка UI
         setupUI()
         updateUI()
+        
+        self.title = "Lessons List"
         
         // Регистрируем ячейку с использованием стиля .subtitle
         tableView?.register(UITableViewCell.self, forCellReuseIdentifier: "LessonCell")
@@ -172,9 +161,6 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
         delegate?.didUpdateStudentLessons(temporaryLessons)
         
         changesMade = false
-        
-        // Выводим состояние temporaryLessons после сохранения изменений
-            print("temporaryLessons after tapping save button on MonthLessonsViewController\(temporaryLessons)")
         
         // Возвращаемся на предыдущий экран
         navigationController?.popViewController(animated: true)
@@ -367,6 +353,27 @@ extension MonthLessonsViewController: UITableViewDataSource {
         tableView.reloadRows(at: [indexPath], with: .none)
     }
     
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let alertController = UIAlertController(title: "Confirm the deletion", message: "Are you sure you want to delete this month?", preferredStyle: .alert)
+            
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            alertController.addAction(cancelAction)
+            
+            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+                self?.deleteLesson(at: indexPath)
+            }
+            alertController.addAction(deleteAction)
+            
+            present(alertController, animated: true, completion: nil)
+        }
+        changesMade = true
+    }
+    
 }
 
 extension Date {
@@ -410,62 +417,31 @@ extension MonthLessonsViewController {
         
         // Перезагружаем таблицу для отображения уроков
         tableView?.reloadData()
-        
-        print("temporaryLessons after loadLessonsForSelectedMonth on MonthLessonsViewController\(temporaryLessons)")
     }
     
-    func editLesson(at index: Int, newDate: String, newAttended: Bool) {
-        guard let student = student else {
-            print("Error: Student is nil")
+    func deleteLesson(at indexPath: IndexPath) {
+        // Ensure that the selectedMonth key exists in temporaryLessons
+        guard var lessonsForSelectedMonth = temporaryLessons[selectedMonth] else {
+            print("No lessons found for selected month: \(selectedMonth)")
             return
         }
-        
-        // Проверяем, есть ли выбранный месяц в словаре уроков
-        guard let lessonsForSelectedMonth = student.lessons[selectedMonth] else {
-            print("No lessons found for selected month")
+
+        // Ensure indexPath.row is within the range of lessonsForSelectedMonth
+        guard indexPath.row < lessonsForSelectedMonth.count else {
+            print("Invalid index: \(indexPath.row)")
             return
         }
-        
-        // Проверяем, находится ли индекс в пределах массива уроков для выбранного месяца
-        guard lessonsForSelectedMonth.indices.contains(index) else {
-            print("Invalid index")
-            return
-        }
-        
-        // Создаем обновленный урок
-        let updatedLesson = Lesson(date: newDate, attended: newAttended)
-        
-        // Обновляем урок в массиве для выбранного месяца
-        student.lessons[selectedMonth]?[index] = updatedLesson
-        
-        // Обновляем интерфейс
+
+        // Remove the lesson at the specified index
+        lessonsForSelectedMonth.remove(at: indexPath.row)
+
+        // Update the lessons for the selected month in the temporaryLessons dictionary
+        temporaryLessons[selectedMonth] = lessonsForSelectedMonth
+
+        // Update the UI
         updateUI()
     }
-    
-    func deleteLesson(at index: Int) {
-        guard let student = student else {
-            print("Error: Student is nil")
-            return
-        }
-        
-        // Проверяем, есть ли выбранный месяц в словаре уроков
-        guard let lessonsForSelectedMonth = student.lessons[selectedMonth] else {
-            print("No lessons found for selected month")
-            return
-        }
-        
-        // Проверяем, находится ли индекс в пределах массива уроков для выбранного месяца
-        guard lessonsForSelectedMonth.indices.contains(index) else {
-            print("Invalid index")
-            return
-        }
-        
-        // Удаляем урок из массива для выбранного месяца
-        student.lessons[selectedMonth]?.remove(at: index)
-        
-        // Обновляем интерфейс
-        updateUI()
-    }
+
     
     // MARK: - UI Update
     

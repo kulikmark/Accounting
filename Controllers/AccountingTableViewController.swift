@@ -8,7 +8,6 @@
 
 import UIKit
 
-// Контроллер таблицы учеников
 class AccountingTableViewController: UITableViewController, MonthsTableViewControllerDelegate {
     
     var student: Student?
@@ -17,70 +16,28 @@ class AccountingTableViewController: UITableViewController, MonthsTableViewContr
         return StudentStore.shared.students
     }
     
-    private var startScreenLabel: UILabel?
-    
     var selectedYear: String = ""
-    
-    let titleLabel = UILabel()
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor.clear
-        
-        // Выполните операции с UITableView здесь
         tableView.reloadData()
-        
-        setupStartScreenLabel()
-        updateStartScreenLabelVisibility()
-        
-        
+        setupStartScreenLabel(with: "There are no added students yet \n\n Add a new student on Students screen and choose them for accounting")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor.systemGroupedBackground
-        
-        // Paid Months Label
-        view.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
-            make.centerX.equalToSuperview()
-        }
-        titleLabel.text = "Students Accounting"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
-        
+        self.title = "Students Accounting"
         tableView.register(AccountingTableViewCell.self, forCellReuseIdentifier: "StudentCell")
         
-        self.tableView.estimatedRowHeight = 100
+        self.tableView.estimatedRowHeight = 150
         self.tableView.rowHeight = UITableView.automaticDimension
         
         tableView.reloadData()
-        
-        setupStartScreenLabel()
-        updateStartScreenLabelVisibility()
-    }
-    
-    private func setupStartScreenLabel() {
-        startScreenLabel = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: tableView.bounds.size.height))
-        startScreenLabel?.text = "There are no added students yet \n\n Add a new student and choose them for accounting"
-        startScreenLabel?.font = UIFont.systemFont(ofSize: 20)
-        startScreenLabel?.textColor = .lightGray
-        startScreenLabel?.textAlignment = .center
-        startScreenLabel?.numberOfLines = 0
-        tableView.backgroundView = startScreenLabel
-    }
-    
-    private func updateStartScreenLabelVisibility() {
-        if students.isEmpty {
-            startScreenLabel?.isHidden = false
-            tableView.separatorStyle = .none
-        } else {
-            startScreenLabel?.isHidden = true
-            tableView.separatorStyle = .singleLine
-        }
     }
     
     // MARK: - Table view data source

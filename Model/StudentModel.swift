@@ -24,7 +24,7 @@ class Student {
     var lessonPrice: LessonPrice
     var lessons: [String: [Lesson]]
     var schedule: [Schedule]
-    var type: StudentType // New property
+    var type: StudentType
 
     init(id: UUID = UUID(),
          name: String,

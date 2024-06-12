@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 
 class PaidMonthCell: UITableViewCell {
+    
     let paidMonthStackView: UIStackView = {
         let stackview = UIStackView()
         stackview.axis = .horizontal
@@ -17,13 +18,6 @@ class PaidMonthCell: UITableViewCell {
         stackview.distribution = .fill
         return stackview
     }()
-    
-//    // Метка для отображения выбранного года
-//       let yearLabel: UILabel = {
-//           let label = UILabel()
-//           label.text = "Year"
-//           return label
-//       }()
     
     // Метка для отображения текста "Оплачен"
     let paidLabel: UILabel = {

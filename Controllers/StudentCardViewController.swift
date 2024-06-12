@@ -43,13 +43,14 @@ class StudentCardViewController: UIViewController {
     var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
     
+    let scrollView = UIScrollView()
     let studentNameTextField = UITextField()
     let studentNameLabel = UILabel()
     let parentNameTextField = UITextField()
     let parentNameLabel = UILabel()
     let phoneTextField = UITextField()
     let phoneLabel = UILabel()
-    let lessonPriceLabel = UITextField()
+    let lessonPriceLabel = UILabel()
     let lessonPriceTextField = UITextField()
     let currencyLabel = UILabel()
     let currencyTextField = UITextField()
@@ -82,14 +83,9 @@ class StudentCardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        printCurrentEditMode()
         setupUI()
-        // Добавляем вызов метода updateScheduleTextField() для обновления расписания при открытии в режиме редактирования
         updateScheduleTextField()
-        
-        
-        view.backgroundColor = UIColor.systemGroupedBackground
-        
+        self.title = editMode == .add ? "Add Student" : "Edit Student"
         //        // Заменяем кнопку "Back" на кастомную кнопку
         //        let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
         //        navigationItem.leftBarButtonItem = backButton
@@ -141,16 +137,6 @@ class StudentCardViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    // Отладочный метод для вывода текущего режима
-    func printCurrentEditMode() {
-        switch editMode {
-        case .add:
-            print("Текущий режим: Добавление ученика")
-        case .edit:
-            print("Текущий режим: Редактирование ученика")
-        }
     }
     
     
@@ -237,34 +223,32 @@ class StudentCardViewController: UIViewController {
         // Use selectedSchedules only in 'add' mode
         var updatedSchedule: [Schedule] = mode == .add ? selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) } : existingStudent?.schedule ?? []
         
-        // Add selected schedules to the existing schedule only in 'edit' mode
+        // Use selectedSchedules only in 'add' mode
+        var updatedPaidMonths = existingStudent?.paidMonths ?? []
+        var updatedLessons = existingStudent?.lessons ?? [:]
+        
         if mode == .edit {
             updatedSchedule += selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) }
+
+            switch existingStudent {
+            case .some(let student):
+                updatedPaidMonths = student.paidMonths
+                updatedLessons = student.lessons
+            case .none:
+                break
+            }
         }
         
         // Create an updated student object with the gathered information
-//        let updatedStudent = Student(
-//            id: studentID,
-//            name: studentName,
-//            parentName: parentName,
-//            phoneNumber: phoneNumber,
-//            paidMonths: existingStudent?.paidMonths ?? paidMonths,
-//            lessonPrice: newLessonPrice,
-//            lessons: [:],
-//            schedule: updatedSchedule,
-//            type: studentType,
-//            image: selectedImage ?? existingStudent?.imageForCell
-//        )
-        
         let updatedStudent = Student(
             id: studentID,
-            name: existingStudent?.name ?? "",
-            parentName: existingStudent?.parentName ?? "",
-            phoneNumber: existingStudent?.phoneNumber ?? "",
-            paidMonths: existingStudent?.paidMonths ?? [],
-            lessonPrice: existingStudent?.lessonPrice ?? newLessonPrice,
-            lessons: existingStudent?.lessons ?? [:],
-            schedule: existingStudent?.schedule ?? [],
+            name: studentName,
+            parentName: parentName,
+            phoneNumber: phoneNumber,
+            paidMonths: updatedPaidMonths,
+            lessonPrice: newLessonPrice,
+            lessons: updatedLessons,
+            schedule: updatedSchedule,
             type: studentType,
             image: selectedImage ?? existingStudent?.imageForCell
         )
@@ -278,20 +262,36 @@ class StudentCardViewController: UIViewController {
         alertController.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
         present(alertController, animated: true)
     }
-    
+}
+
+extension StudentCardViewController {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if textField == lessonPriceTextField {
-            // Ensure there's only one decimal separator
+        switch textField {
+        case lessonPriceTextField:
             let currentText = textField.text ?? ""
             if currentText.contains(",") && string.contains(",") {
                 return false
             }
-            // Allow only digits and comma
             let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
             if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
                 return false
             }
+        case studentNameTextField, parentNameTextField, currencyTextField:
+            let allowedCharacters = CharacterSet.letters
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        case phoneTextField:
+            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        default:
+            break
         }
+        
         return true
     }
 }
+
+

@@ -37,6 +37,8 @@
 		6D5A1A322C0E85B100065DF7 /* TextFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5A1A312C0E85B100065DF7 /* TextFormatter.swift */; };
 		6D6B0EF22C14601100F0DEBF /* ExpendedFooterTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6B0EF12C14601100F0DEBF /* ExpendedFooterTableView.swift */; };
 		6DCED48E2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCED48D2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift */; };
+		6DCED4902C18A03900A9E81D /* StartScreenLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCED48F2C18A03900A9E81D /* StartScreenLabel.swift */; };
+		6DCED4922C18D9E900A9E81D /* LessonDetailsSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCED4912C18D9E800A9E81D /* LessonDetailsSetupUI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -70,6 +72,8 @@
 		6D5A1A312C0E85B100065DF7 /* TextFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFormatter.swift; sourceTree = "<group>"; };
 		6D6B0EF12C14601100F0DEBF /* ExpendedFooterTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpendedFooterTableView.swift; sourceTree = "<group>"; };
 		6DCED48D2C17895900A9E81D /* HomeWorkPaidMonthsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWorkPaidMonthsCell.swift; sourceTree = "<group>"; };
+		6DCED48F2C18A03900A9E81D /* StartScreenLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreenLabel.swift; sourceTree = "<group>"; };
+		6DCED4912C18D9E800A9E81D /* LessonDetailsSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonDetailsSetupUI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +136,7 @@
 				6D5A1A1F2C07D4B700065DF7 /* StudentCardSetupUI.swift */,
 				6D2B9B812C131707003B6AF4 /* MonthsTableSetupUI.swift */,
 				6D2B9B7F2C131622003B6AF4 /* MonthLessonsSetupUI.swift */,
+				6DCED4912C18D9E800A9E81D /* LessonDetailsSetupUI.swift */,
 				6D2B9B7E2C1315E9003B6AF4 /* Cells */,
 			);
 			path = View;
@@ -154,6 +159,7 @@
 		6D0581412BD9782F00130439 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				6DCED48F2C18A03900A9E81D /* StartScreenLabel.swift */,
 				6D5A1A232C07D60E00065DF7 /* StudentCardScheduleSelection.swift */,
 				6D5A1A212C07D59500065DF7 /* UIImagePickerControllerDelegate.swift */,
 				6D5A1A252C07D81E00065DF7 /* StudentCardPhotoChoosingPermission.swift */,
@@ -259,6 +265,7 @@
 				6D5A1A2A2C07E73800065DF7 /* StudentStore.swift in Sources */,
 				6D5A1A2E2C0E73C000065DF7 /* AccountingTableViewCell.swift in Sources */,
 				6D0581322BD1633400130439 /* StudentModel.swift in Sources */,
+				6DCED4902C18A03900A9E81D /* StartScreenLabel.swift in Sources */,
 				6D05812E2BCF182700130439 /* MonthLessonsViewController.swift in Sources */,
 				6D05814B2BDFF5B200130439 /* MonthsTableViewController.swift in Sources */,
 				6D5A1A222C07D59500065DF7 /* UIImagePickerControllerDelegate.swift in Sources */,
@@ -279,6 +286,7 @@
 				6D05812C2BCA855700130439 /* StudentsTableViewController.swift in Sources */,
 				6D5A1A1E2C073F0400065DF7 /* HomeWorkTableViewController.swift in Sources */,
 				6D0581302BCFBFBA00130439 /* StudentTableViewCell.swift in Sources */,
+				6DCED4922C18D9E900A9E81D /* LessonDetailsSetupUI.swift in Sources */,
 				6D5A1A242C07D60E00065DF7 /* StudentCardScheduleSelection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

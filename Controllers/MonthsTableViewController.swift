@@ -36,7 +36,6 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate, Sa
     var selectedSchedules = [(weekday: String, time: String)]()
     var lessonsForStudent: [String: [Lesson]] = [:]
     let addPaidMonthButton = UIButton(type: .system)
-    let titleLabel = UILabel()
     
     // MARK: - View Lifecycle
     
@@ -55,17 +54,7 @@ class MonthsTableViewController: UITableViewController, MonthLessonsDelegate, Sa
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        // Paid Months Label
-        view.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-35)
-            make.centerX.equalToSuperview()
-        }
-        titleLabel.text = "Months List"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
-        
-        view.backgroundColor = .white
+        self.title = "Paid Months List"
         
         // Заменяем кнопку "Back" на кастомную кнопку
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
