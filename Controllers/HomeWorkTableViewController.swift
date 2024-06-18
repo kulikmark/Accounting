@@ -11,13 +11,12 @@ import Combine
 import SnapKit
 
 protocol HomeWorkTableViewControllerDelegate: AnyObject {
-    func didUpdateStudent(_ student: Student, selectedYear: String)
+    func didUpdateStudent(_ student: Student)
 }
 
-extension HomeWorkTableViewController: MonthsTableViewControllerDelegate {
-    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
+extension HomeWorkTableViewController: DidUpdateStudentDelegate {
+    func didUpdateStudent(_ updatedStudent: Student) {
         StudentStore.shared.updateStudent(updatedStudent)
-        self.selectedYear = selectedYear
         tableView.reloadData()
     }
 }
@@ -34,11 +33,10 @@ class HomeWorkTableViewController: UITableViewController {
     }
     var lessonPrice: String = ""
     var changesMade = false
-    var paidMonths = [PaidMonth]()
+    var paidMonths = [Month]()
     var schedules = [Schedule]()
-    var selectedYear: String = ""
     var selectedSchedules = [(weekday: String, time: String)]()
-    var lessonsForStudent: [String: [Lesson]] = [:]
+    var lessonsForStudent: [Lesson] = []
     let addPaidMonthButton = UIButton(type: .system)
     let titleLabel = UILabel()
     var startScreenLabel: UILabel?

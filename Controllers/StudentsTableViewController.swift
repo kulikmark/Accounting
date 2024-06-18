@@ -17,13 +17,16 @@ class StudentsTableViewController: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.clear
         tableView.reloadData()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Скрыть разделители ячеек
+//            tableView.separatorStyle = .none
+//        tableView.separatorStyle = .singleLine
+                tableView.separatorColor = UIColor.clear
         
         view.backgroundColor = UIColor.systemGroupedBackground
         self.title = "Students List"
@@ -119,12 +122,7 @@ extension StudentsTableViewController: StudentCardDelegate {
 
 // MARK: - MonthsTableViewControllerDelegate
 
-extension StudentsTableViewController: MonthsTableViewControllerDelegate {
-    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
-        StudentStore.shared.updateStudent(updatedStudent)
-        self.selectedYear = selectedYear
-        tableView.reloadData()
-    }
+extension StudentsTableViewController: DidUpdateStudentDelegate {
     
     func didUpdateStudent(_ updatedStudent: Student) {
         if let index = students.firstIndex(where: { $0.id == updatedStudent.id }) {

@@ -8,67 +8,40 @@
 import UIKit
 import SnapKit
 
-extension MonthLessonsViewController {
-    // Метод делегата для обновления уроков
-    func didUpdateStudentLessons(_ lessons: [String: [Lesson]]) {
-        // Обновляем данные и перезагружаем таблицу
-        lessonsForStudent = lessons.flatMap { $0.value }
+class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveChangesHandling, DidUpdateStudentDelegate {
+    func didUpdateStudent(_ student: Student) {
+        StudentStore.shared.updateStudent(student)
+        self.student = student
         tableView?.reloadData()
+        // Debug output
+           print("Updated student: \(student)")
     }
     
-    // Метод делегата для обновления домашнего задания
-    func didUpdateHomework(forLessonIndex index: Int, homework: String) {
-        // Проверяем, существует ли урок с указанным индексом в массиве
-        guard index >= 0, index < temporaryLessons[selectedMonth]?.count ?? 0 else {
-            print("Lesson index out of range")
-            return
-        }
-        
-        // Обновляем домашнее задание у урока в temporaryLessons
-        temporaryLessons[selectedMonth]?[index].homework = homework
-        
-        // Обновляем данные уроков для студента
-        lessonsForStudent = temporaryLessons.flatMap { $0.value }
-        
-        // Перезагружаем данные в таблице
-        tableView?.reloadData()
-        
-        changesMade = true
+    var students: [Student] {
+        return StudentStore.shared.students
     }
     
-    func didUpdateAttendance(forLessonIndex index: Int, attended: Bool) {
-        // Обновляем домашнее задание у урока в temporaryLessons
-        temporaryLessons[selectedMonth]?[index].attended = attended
-        
-        changesMade = true
-    }
-}
-
-protocol MonthLessonsDelegate: AnyObject {
-    func didUpdateStudentLessons(_ lessons: [String: [Lesson]])
-}
-
-class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveChangesHandling, LessonDetailDelegate {
-    var student: Student?
-    weak var delegate: MonthLessonsDelegate?
+    weak var delegate: DidUpdateStudentDelegate?
+    
+    var student: Student!
+    
     var changesMade = false
-    var lessonPrice: String = ""
-    var selectedMonth: String = ""
-    var selectedYear: String = ""
+    
+    var selectedMonth: Month!
+    
+    var lessonPrice: Double = 0.0
     var selectedSchedules = [(weekday: String, time: String)]()
-    // Добавим новое свойство для хранения расписания
     var schedule: [String] {
         var scheduleStrings = selectedSchedules.map { "\($0.weekday) \($0.time)" }
-        scheduleStrings.sort() // Сортируем расписание по дням недели и времени
+        scheduleStrings.sort()
         return scheduleStrings
     }
-    var temporaryLessons: [String: [Lesson]] = [:] // Список уроков для отображения
     var lessonsForStudent: [Lesson] = []
+    
     let addScheduledLessonsButton = UIButton(type: .system)
     let addLessonButton = UIButton(type: .system)
-    var tableView: UITableView? // Создаем свойство tableView
+    var tableView: UITableView?
     private let datePicker = UIDatePicker()
-    // Словарь для соответствия названий месяцев и их числовых представлений
     let monthDictionary: [String: String] = [
         "January": "01",
         "February": "02",
@@ -86,20 +59,21 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // Настройка UI
-        updateUI()
+        tableView?.reloadData()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Настройка UI
         setupUI()
-        updateUI()
+        
+        tableView?.reloadData()
         
         self.title = "Lessons List"
-        
         // Регистрируем ячейку с использованием стиля .subtitle
         tableView?.register(UITableViewCell.self, forCellReuseIdentifier: "LessonCell")
+        
+        // Ensure selectedMonth is set correctly
+        print("Selected Month: \(selectedMonth.monthName) \(selectedMonth.monthYear)")
         
         // Заменяем кнопку "Back" на кастомную кнопку
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
@@ -107,63 +81,36 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
         
         // Создаем кнопку "Поделиться"
         let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareButtonTapped))
-
         // Создаем кнопку "Сохранить"
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
-
         // Устанавливаем обе кнопки в правую часть навигационного бара
         navigationItem.rightBarButtonItems = [saveButton, shareButton]
-        
         checkIfScheduledLessonsAdded()
-        loadLessonsForSelectedMonth()
-    }
-    
-    @objc func shareButtonTapped() {
-        let message = createShareMessage()
-        let activityViewController = UIActivityViewController(activityItems: [message], applicationActivities: nil)
-        
-        // Настройка для iPad
-           if let popoverController = activityViewController.popoverPresentationController {
-               popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.last
-               popoverController.sourceView = self.view // для безопасности, хотя barButtonItem должно быть достаточно
-           }
-        
-        // Present the share sheet
-        present(activityViewController, animated: true, completion: nil)
-    }
-    
-    func createShareMessage() -> String {
-        guard let student = student else { return "" }
-        let studentType = student.type
-        let name = studentType == .schoolchild ? student.parentName : student.name
-        let lessonCount = temporaryLessons[selectedMonth]?.count ?? 0
-        let paidMonth = selectedMonth
-        let lessonPrice = student.lessonPrice.price
-        let currency = student.lessonPrice.currency
-        let totalSum = (Double(lessonPrice) ?? 0.0) * Double(lessonCount)
-
-        return "Hello, \(name)! There are \(lessonCount) lessons in \(paidMonth) = \(totalSum) \(currency)."
     }
     
     @objc func saveButtonTapped() {
-        // Проверяем и сохраняем уроки для текущего месяца
-        guard let lessonsForCurrentMonth = temporaryLessons[selectedMonth] else {
-            return
+        // Update lessons in the Month object in monthsArray
+        selectedMonth.lessons = lessonsForStudent
+        
+        // Update student data
+        if let index = student.months.firstIndex(where: { $0.monthName == selectedMonth.monthName && $0.monthYear == selectedMonth.monthYear }) {
+            student.months[index] = selectedMonth
         }
         
-        // Обновляем данные студента
-        if student?.lessons[selectedMonth] == nil {
-            student?.lessons[selectedMonth] = []
-        }
-        student?.lessons[selectedMonth] = lessonsForCurrentMonth
-        
-        // Передаем обновленные данные через делегата
-        delegate?.didUpdateStudentLessons(temporaryLessons)
+        // Notify delegate about lesson updates
+        delegate?.didUpdateStudent(student)
         
         changesMade = false
-        
-        // Возвращаемся на предыдущий экран
         navigationController?.popViewController(animated: true)
+        
+        // Reload table view to reflect changes
+        tableView?.reloadData()
+        
+        // Debug output
+           print("Saved lessons for \(selectedMonth.monthName) \(selectedMonth.monthYear):")
+           for lesson in selectedMonth.lessons {
+               print("\(lesson.date) - \(lesson.attended ? "Present" : "Absent")")
+           }
     }
     
     @objc private func backButtonTapped() {
@@ -171,8 +118,8 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
     }
     
     func checkIfScheduledLessonsAdded() {
-        // Проверяем, пуст ли словарь temporaryLessons для текущего месяца
-        if let lessonsForSelectedMonth = temporaryLessons[selectedMonth], !lessonsForSelectedMonth.isEmpty {
+        // Проверяем, пуст ли словарь lessonsForStudent для текущего месяца
+        if !lessonsForStudent.isEmpty {
             addScheduledLessonsButton.setTitle("Delete all lessons", for: .normal)
             // Добавляем действие для кнопки при её нажатии после добавления уроков
             addScheduledLessonsButton.removeTarget(self, action: #selector(addScheduledLessonsButtonTapped), for: .touchUpInside)
@@ -185,292 +132,197 @@ class MonthLessonsViewController: UIViewController, UITableViewDelegate, SaveCha
         }
     }
     
+    @objc func deleteAllLessons() {
+        print("Deleting all lessons for \(selectedMonth.monthName) \(selectedMonth.monthYear)")
+        // Удаляем все уроки для выбранного месяца из временного хранилища
+        lessonsForStudent.removeAll()
+        selectedMonth.lessons = lessonsForStudent
+        
+        tableView?.reloadData()
+        // Обновляем состояние кнопки
+        checkIfScheduledLessonsAdded()
+        changesMade = true
+        
+        print("lessonsForStudent после удаления: \(lessonsForStudent)")
+    }
     
     @objc func addScheduledLessonsButtonTapped() {
-        print("Adding scheduled lessons for \(selectedMonth) \(selectedYear)")
-        // Выводим текущее состояние словаря temporaryLessons перед добавлением уроков
-        print("temporaryLessons before adding scheduled lessons: \(temporaryLessons)")
         
-        guard !selectedYear.isEmpty else {
-            print("Selected year is empty")
-            return
-        }
+        print("Adding scheduled lessons for \(selectedMonth.monthName) \(selectedMonth.monthYear)")
+        generateLessonsForMonth()
         
-        generateLessonsForMonth(selectedYear, month: selectedMonth, schedule: schedule)
+        selectedMonth.lessons = lessonsForStudent
         
-        // Обновляем интерфейс
         tableView?.reloadData()
+        changesMade = true
         
         // Проверяем, были ли добавлены уроки согласно расписанию
         checkIfScheduledLessonsAdded()
         
-        changesMade = true
-        
-        // Выводим состояние словаря temporaryLessons после добавления уроков
-        print("temporaryLessons after adding scheduled lessons: \(temporaryLessons)")
+        print("Adding scheduled lessons to selectedMonth.lessons \(selectedMonth.lessons)")
     }
-
     
     @objc func addLessonButtonTapped() {
         showDatePicker()
         changesMade = true
     }
     
-    @objc func deleteAllLessons() {
-        print("Deleting all lessons for \(selectedMonth) \(selectedYear)")
-        
-        // Удаляем все уроки для выбранного месяца из временного хранилища
-        temporaryLessons[selectedMonth] = []
-        // Обновляем интерфейс
-        tableView?.reloadData()
-        // Удаляем предыдущий обработчик действия, если он есть
-        addScheduledLessonsButton.addTarget(self, action: #selector(addScheduledLessonsButtonTapped), for: .touchUpInside)
-        
-        // Показываем кнопку "Добавить уроки согласно расписанию"
-        checkIfScheduledLessonsAdded()
-        
-        changesMade = true
-        
-        print("selectedMonth \(selectedMonth)")
-        print("temporaryLessons после удаления: \(temporaryLessons)")
-    }
-    
     func showDatePicker() {
         let datePickerSheet = UIAlertController(title: "Lesson date", message: "\n\n\n\n\n\n\n\n\n\n\n\n", preferredStyle: .actionSheet)
-        
-        // Add date picker to action sheet
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .wheels
-        //        datePicker.locale = Locale(identifier: "ru_RU")
         datePickerSheet.view.addSubview(datePicker)
-        
         datePicker.snp.makeConstraints { make in
             make.width.equalTo(400)
             make.height.equalTo(300)
         }
-        
-        // Add Cancel button
         datePickerSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        // Add Done button
         datePickerSheet.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             let selectedDate = datePicker.date
             let dateFormatter = DateFormatter()
-            //            dateFormatter.locale = Locale(identifier: "ru_RU")
             dateFormatter.dateFormat = "dd.MM.yyyy"
             let dateString = dateFormatter.string(from: selectedDate)
-            self.addLesson(date: dateString, attended: false)
+            self.addLesson(date: dateString, year: self.selectedMonth.monthYear, month: self.selectedMonth.monthYear, attended: false)
         }))
-        
         tableView?.reloadData()
-        
-        
-        // Present action sheet
         present(datePickerSheet, animated: true, completion: nil)
     }
-    
 }
-
 
 extension MonthLessonsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return temporaryLessons[selectedMonth]?.count ?? 0
+        return selectedMonth.lessons.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = UITableViewCell(style: .subtitle , reuseIdentifier: "LessonCell")
-        
-        // Safeguard: Ensure lessonsForSelectedMonth is not empty and index is within bounds
-        guard let lessonsForSelectedMonth = temporaryLessons[selectedMonth], indexPath.row < lessonsForSelectedMonth.count else {
+        guard indexPath.row < selectedMonth.lessons.count else {
             fatalError("Lessons for selected month not found or index out of range")
         }
-        
         // Получаем урок для текущего индекса
-        let lesson = lessonsForSelectedMonth[indexPath.row]
-        
+        let lesson = selectedMonth.lessons[indexPath.row]
         // Форматирование даты
         let dateFormatter = DateFormatter()
-        //            dateFormatter.locale = Locale(identifier: "ru_RU")
         dateFormatter.dateFormat = "dd.MM.yyyy"
-        
         // Получаем дату из строки даты
         guard let lessonDate = dateFormatter.date(from: lesson.date) else {
             fatalError("Failed to convert lesson date to Date.")
         }
-        
         // Получаем название дня недели из даты
         let weekdayString = lessonDate.weekday() // Вызываем метод weekday
-        
         // Создание строки для отображения в ячейке
         let lessonDateString = "\(indexPath.row + 1). \(dateFormatter.string(from: lessonDate))"
-        
         // Установка текста в ячейку в зависимости от того, присутствовал ли студент на уроке
         cell.textLabel?.text = lessonDateString
         cell.detailTextLabel?.text = lesson.attended ? "Was present (\(weekdayString))" : "Was absent (\(weekdayString))"
-        
         // Устанавливаем или снимаем галочку в зависимости от состояния урока
         cell.accessoryType = lesson.attended ? .checkmark : .none
-        
         
         return cell
     }
     
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true) // Снимаем выделение ячейки
+        tableView.deselectRow(at: indexPath, animated: true)
         
-        guard var lessonsForSelectedMonth = temporaryLessons[selectedMonth] else {
-            fatalError("Lessons for selected month not found")
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(handleLessonUpdate(_:)), name: .lessonUpdatedNotification, object: nil)
         
-        let lesson = lessonsForSelectedMonth[indexPath.row]
+        let lesson = selectedMonth.lessons[indexPath.row]
         
-        // Create the lesson detail view controller
+        // Создаем экземпляр LessonDetailsViewController
         let lessonDetailVC = LessonDetailsViewController()
+        
+        // Передаем необходимые данные в LessonDetailsViewController
         lessonDetailVC.student = student
-        lessonDetailVC.temporaryLessons = temporaryLessons
         lessonDetailVC.lesson = lesson
-        lessonDetailVC.lessonIndex = indexPath.row // Pass the lesson index
+        lessonDetailVC.updatedlessonsForStudent = lessonsForStudent
+        lessonDetailVC.homeworksArray = selectedMonth.lessons.map { $0.homework ?? "" }
+        
+        // Устанавливаем делегата для обратного обновления данных
         lessonDetailVC.delegate = self
         
-        // Передаем временный массив домашнего задания
-        lessonDetailVC.homeworksArray = lessonsForSelectedMonth.map { $0.homework ?? "" }
-        
-        // Переходим к контроллеру с уроками выбранного месяца
+        // Переходим на экран LessonDetailsViewController
         navigationController?.pushViewController(lessonDetailVC, animated: true)
         
-        //        changesMade = true
-        
-        // Обновляем значение урока в массиве для выбранного месяца
-        lessonsForSelectedMonth[indexPath.row] = lesson
-        
-        // Обновляем словарь уроков для выбранного месяца
-        temporaryLessons[selectedMonth] = lessonsForSelectedMonth
-        
-        // Обновляем ячейку, чтобы показать галочку
-        tableView.reloadRows(at: [indexPath], with: .none)
+        print("Selected student: \(String(describing: student))")
+        print("Selected lesson: \(lesson)")
     }
+    
+    @objc func handleLessonUpdate(_ notification: Notification) {
+            guard let updatedLesson = notification.userInfo?["updatedLesson"] as? Lesson else {
+                return
+            }
+        print("Received lesson update notification for lesson: \(updatedLesson)")
+        
+            // Обновляем уроки в MonthLessonsViewController
+        if let index = selectedMonth.lessons.firstIndex(where: { $0.date == updatedLesson.date }) {
+            selectedMonth.lessons[index] = updatedLesson
+            lessonsForStudent = selectedMonth.lessons
+            }
+        
+            tableView?.reloadData()
+            changesMade = true
+            // Debug output
+            print("Updated lesson in MonthLessonsViewController")
+        }
+
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let alertController = UIAlertController(title: "Confirm the deletion", message: "Are you sure you want to delete this month?", preferredStyle: .alert)
-            
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            alertController.addAction(cancelAction)
-            
-            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
-                self?.deleteLesson(at: indexPath)
-            }
-            alertController.addAction(deleteAction)
-            
-            present(alertController, animated: true, completion: nil)
-        }
-        changesMade = true
-    }
-    
 }
 
 extension Date {
     func weekday(using calendar: Calendar = Calendar(identifier: .gregorian)) -> String {
         let weekdayIndex = calendar.component(.weekday, from: self)
         let dateFormatter = DateFormatter()
-        //        dateFormatter.locale = Locale(identifier: "ru_RU")
         return dateFormatter.shortWeekdaySymbols[weekdayIndex - 1]
     }
 }
 
+extension Notification.Name {
+    static let lessonUpdatedNotification = Notification.Name("LessonUpdatedNotification")
+}
+
+// MARK: - Lesson Management
 
 extension MonthLessonsViewController {
     
-    // MARK: - Lesson Management
-    
-    func addLesson(date: String, attended: Bool) {
+    func addLesson(date: String, year: String, month: String, attended: Bool) {
         print("Adding lesson for date: \(date)")
         let lesson = Lesson(date: date, attended: attended)
-        
-        // Получаем массив уроков для выбранного месяца из временного массива
-        var lessonsForSelectedMonth = temporaryLessons[selectedMonth] ?? []
-        
-        // Добавляем новый урок
-        lessonsForSelectedMonth.append(lesson)
-        
-        // Обновляем словарь уроков для выбранного месяца во временном массиве
-        temporaryLessons[selectedMonth] = lessonsForSelectedMonth
-        
-        // Update the UI
+        selectedMonth.lessons.append(lesson)
+        lessonsForStudent = selectedMonth.lessons
+        delegate?.didUpdateStudent(student)
         updateUI()
     }
-
-    func loadLessonsForSelectedMonth() {
-        // Инициализируем временные уроки для выбранного месяца
-        if let lessonsForCurrentMonth = student?.lessons[selectedMonth] {
-            temporaryLessons[selectedMonth] = lessonsForCurrentMonth
-        } else {
-            temporaryLessons[selectedMonth] = []
-        }
-        
-        // Перезагружаем таблицу для отображения уроков
-        tableView?.reloadData()
-    }
-    
-    func deleteLesson(at indexPath: IndexPath) {
-        // Ensure that the selectedMonth key exists in temporaryLessons
-        guard var lessonsForSelectedMonth = temporaryLessons[selectedMonth] else {
-            print("No lessons found for selected month: \(selectedMonth)")
-            return
-        }
-
-        // Ensure indexPath.row is within the range of lessonsForSelectedMonth
-        guard indexPath.row < lessonsForSelectedMonth.count else {
-            print("Invalid index: \(indexPath.row)")
-            return
-        }
-
-        // Remove the lesson at the specified index
-        lessonsForSelectedMonth.remove(at: indexPath.row)
-
-        // Update the lessons for the selected month in the temporaryLessons dictionary
-        temporaryLessons[selectedMonth] = lessonsForSelectedMonth
-
-        // Update the UI
-        updateUI()
-    }
-
-    
-    // MARK: - UI Update
     
     func updateUI() {
         guard let lessonTableView = self.tableView else { return }
         lessonTableView.reloadData()
     }
-}
-
-extension MonthLessonsViewController {
-    func generateLessonsForMonth(_ year: String, month: String, schedule: [String]) {
-        print("Generating lessons for month: \(month), year: \(year)")
-        print("Schedule: \(schedule)")
+    
+    func generateLessonsForMonth() {
+        guard let monthName = selectedMonth?.monthName, let monthYear = selectedMonth?.monthYear else {
+            print("Month or year is not set.")
+            return
+        }
+        
+        print("Generating lessons for month: \(monthName), year: \(monthYear)")
         
         let calendar = Calendar.current
-        guard let monthNumber = monthDictionary[month] else {
-            print("Failed to get month number for \(month)")
+        guard let monthNumber = monthDictionary[monthName] else {
+            print("Failed to get month number for \(monthName)")
             return
         }
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
         
-        if temporaryLessons[month] == nil {
-            temporaryLessons[month] = []
-        }
+        selectedMonth.lessons.removeAll() // Очищаем уроки только для выбранного месяца
         
-        guard let date = dateFormatter.date(from: "01.\(monthNumber).\(year)") else {
-            print("Failed to convert month to date with string: 01.\(monthNumber).\(year)")
+        guard let date = dateFormatter.date(from: "01.\(monthNumber).\(monthYear)") else {
+            print("Failed to convert month to date with string: 01.\(monthNumber).\(monthYear)")
             return
         }
         
@@ -480,21 +332,55 @@ extension MonthLessonsViewController {
         }
         
         for day in range.lowerBound..<range.upperBound {
-            let dateString = String(format: "%02d.%02d.%@", day, Int(monthNumber)!, year)
+            let dateString = String(format: "%02d.%02d.%@", day, Int(monthNumber)!, monthYear)
             if let currentDate = dateFormatter.date(from: dateString) {
                 let weekday = calendar.component(.weekday, from: currentDate)
                 let weekdayString = dateFormatter.shortWeekdaySymbols[weekday - 1].lowercased()
                 
-                for scheduleEntry in schedule {
-                    let components = scheduleEntry.components(separatedBy: " ")
-                    let scheduleWeekday = components[0].lowercased()
+                for scheduleEntry in selectedSchedules {
+                    let scheduleWeekday = scheduleEntry.0.lowercased()
                     if scheduleWeekday == weekdayString {
-                        addLesson(date: dateString, attended: false)
+                        addLesson(date: dateString, year: monthYear, month: monthName, attended: false)
                     }
                 }
             } else {
                 print("Failed to convert dateString to date: \(dateString)")
             }
         }
+    }
+}
+
+// MARK: - createShareMessage & shareButtonTapped
+
+extension MonthLessonsViewController {
+    
+    func createShareMessage() -> String {
+        guard let student = student else { return "" }
+        let studentType = student.type
+        let name = studentType == .schoolchild ? student.parentName : student.name
+        let lessonsForSelectedMonth = lessonsForStudent
+        let lessonCount = lessonsForSelectedMonth.count
+        let lessonPrice: Double
+        let currency: String
+        if let month = student.months.first(where: { $0.monthName == student.month.monthName && $0.monthYear == student.month.monthYear }) {
+            lessonPrice = month.lessonPrice.price
+            currency = month.lessonPrice.currency
+        } else {
+            lessonPrice = student.lessonPrice.price
+            currency = student.lessonPrice.currency
+        }
+        let totalSum = lessonPrice * Double(lessonCount)
+        return "Hello, \(name)! There are \(lessonCount) lessons in \(selectedMonth.monthName) \(selectedMonth.monthYear) = \(totalSum) \(currency)."
+    }
+    
+    @objc func shareButtonTapped() {
+        let message = createShareMessage()
+        let activityViewController = UIActivityViewController(activityItems: [message], applicationActivities: nil)
+        // Настройка для iPad
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.last
+            popoverController.sourceView = self.view // для безопасности, хотя barButtonItem должно быть достаточно
+        }
+        present(activityViewController, animated: true, completion: nil)
     }
 }

@@ -74,12 +74,6 @@ extension StudentCardViewController {
             if let student = student {
                 studentTypeSegmentedControl.selectedSegmentIndex = student.type == .schoolchild ? 0 : 1
             }
-            
-//            // Добавьте здесь код для скрытия полей в зависимости от выбранного индекса
-//            if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
-//                parentNameLabel.isHidden = true
-//                parentNameTextField.isHidden = true
-//            }
         
         // Student Name Label
         stackView.addArrangedSubview(studentNameLabel)

@@ -50,8 +50,6 @@ class AccountingTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
-        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 5, bottom: 5, right: 5))
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -75,8 +73,6 @@ class AccountingTableViewCell: UITableViewCell {
         contentView.addSubview(moneySumLabel)
         
         setupConstraints()
-        
-        print(" lessonsQuantityLabel.text \(String(describing: lessonsQuantityLabel.text))")
     }
     
     func setupConstraints() {
@@ -98,39 +94,61 @@ class AccountingTableViewCell: UITableViewCell {
             make.leading.trailing.equalTo(studentNameLabel)
             make.height.equalTo(16)
         }
-
+        
         moneySumLabel.snp.makeConstraints { make in
             make.top.equalTo(lessonsQuantityLabel.snp.bottom).offset(5)
             make.leading.trailing.equalTo(studentNameLabel)
             make.height.equalTo(16)
-//            make.height.equalToSuperview().offset(-10).priority(.low)
             make.bottom.lessThanOrEqualToSuperview().offset(-10)
         }
-
+        
     }
     
-    func configure(with student: Student, image: UIImage?) {
-        if let profileImage = image {
+    func configure(with student: Student) {
+        
+        self.student = student
+        
+        if let profileImage = student.imageForCell {
             profileImageView.image = profileImage
-        } else if let studentImage = student.imageForCell {
-            profileImageView.image = studentImage
         } else {
             profileImageView.image = UIImage(named: "icon")
         }
         
         studentNameLabel.text = student.name
-       
-        // Вычисляем количество уроков
-            let lessonsCount = Double(student.lessons.values.reduce(0) { $0 + $1.count })
-            lessonsQuantityLabel.text = "Lessons Quantity: \(Int(lessonsCount))"
         
-        // Вычисляем сумму денег, учитывая цену урока и валюту
-           if let lessonPrice = Double(student.lessonPrice.price) {
-               let moneySum = lessonsCount * lessonPrice
-               moneySumLabel.text = "Money Sum: \(moneySum) \(student.lessonPrice.currency)"
-           } else {
-               moneySumLabel.text = "Money Sum: Invalid price"
-           }
+        // Очищаем предыдущие данные
+        lessonsQuantityLabel.text = ""
+        moneySumLabel.text = ""
+        
+        // Вычисляем и отображаем информацию по каждому месяцу
+        var totalLessonsCount = 0
+        var totalMoneySum = 0.0
+        
+        for month in student.months {
+            let lessonsCount = month.lessons.count
+            totalLessonsCount += lessonsCount
+            
+            let lessonPrice = month.lessonPrice
+            let moneySum = Double(lessonsCount) * lessonPrice.price
+            totalMoneySum += moneySum
+            
+            // Создаем строку для отображения информации о месяце
+            let monthInfo = "\(month.monthName) - Lessons: \(lessonsCount), Total: \(moneySum) \(lessonPrice.currency)"
+            
+            // Добавляем информацию в соответствующий label
+            if let existingText = lessonsQuantityLabel.text, !existingText.isEmpty {
+                lessonsQuantityLabel.text! += "\n\(monthInfo)"
+            } else {
+                lessonsQuantityLabel.text = monthInfo
+            }
+        }
+        
+        // Убедитесь, что отображаете общее количество уроков
+        print("Total lessons for student: \(totalLessonsCount)")
+        
+        // Отображаем общее количество уроков и сумму денег
+        lessonsQuantityLabel.text = "Total Lessons: \(totalLessonsCount)"
+        moneySumLabel.text = "Total Money: \(totalMoneySum)"
     }
     
     required init?(coder aDecoder: NSCoder) {

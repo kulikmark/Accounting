@@ -1,10 +1,3 @@
-//
-//  StudentModel.swift
-//  Accounting
-//
-//  Created by Марк Кулик on 18.04.2024.
-//
-
 import UIKit
 
 enum StudentType: String, Codable {
@@ -20,9 +13,10 @@ class Student {
     var parentName: String
     var imageForCell: UIImage?
     var phoneNumber: String
-    var paidMonths: [PaidMonth]
+    var month: Month
+    var months: [Month]
+    var lessons: [Lesson]
     var lessonPrice: LessonPrice
-    var lessons: [String: [Lesson]]
     var schedule: [Schedule]
     var type: StudentType
 
@@ -30,9 +24,10 @@ class Student {
          name: String,
          parentName: String,
          phoneNumber: String,
-         paidMonths: [PaidMonth],
+         month: Month,
+         months: [Month],
+         lessons: [Lesson],
          lessonPrice: LessonPrice,
-         lessons: [String: [Lesson]],
          schedule: [Schedule],
          type: StudentType,
          image: UIImage? = nil) {
@@ -42,9 +37,10 @@ class Student {
         self.parentName = parentName
         self.imageForCell = image
         self.phoneNumber = phoneNumber
-        self.paidMonths = paidMonths
-        self.lessonPrice = lessonPrice
+        self.month = month
+        self.months = months
         self.lessons = lessons
+        self.lessonPrice = lessonPrice
         self.schedule = schedule
         self.type = type
     }
@@ -55,14 +51,20 @@ struct Schedule {
     var time: String
 }
 
-struct PaidMonth {
-    var year: String
-    var month: String
+struct Month: Equatable {
+    static func == (lhs: Month, rhs: Month) -> Bool {
+        return lhs.monthName == rhs.monthName && lhs.monthYear == rhs.monthYear && lhs.isPaid == rhs.isPaid
+    }
+    
+    var monthName: String
+    var monthYear: String
     var isPaid: Bool
+    var lessonPrice: LessonPrice
+    var lessons: [Lesson]
 }
 
 struct LessonPrice {
-    var price: String
+    var price: Double
     var currency: String
 }
 

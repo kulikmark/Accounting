@@ -8,36 +8,44 @@
 
 import UIKit
 
-class AccountingTableViewController: UITableViewController, MonthsTableViewControllerDelegate {
+extension AccountingTableViewController {
+    func didUpdateStudent(_ updatedStudent: Student) {
+        StudentStore.shared.updateStudent(updatedStudent)
+        tableView.reloadData()
+    }
+}
+
+class AccountingTableViewController: UITableViewController, DidUpdateStudentDelegate {
     
     var student: Student?
-    
     var students: [Student] {
         return StudentStore.shared.students
     }
     
-    var selectedYear: String = ""
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.clear
-        tableView.reloadData()
-        setupStartScreenLabel(with: "There are no added students yet \n\n Add a new student on Students screen and choose them for accounting")
+        setupTableView()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupUI()
+    }
+    
+    // MARK: - Setup Methods
+    
+    private func setupTableView() {
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = UIColor.clear
+        tableView.reloadData()
+    }
+    
+    private func setupUI() {
         view.backgroundColor = UIColor.systemGroupedBackground
         self.title = "Students Accounting"
         tableView.register(AccountingTableViewCell.self, forCellReuseIdentifier: "StudentCell")
-        
-        self.tableView.estimatedRowHeight = 150
-        self.tableView.rowHeight = UITableView.automaticDimension
-        
-        tableView.reloadData()
+        tableView.estimatedRowHeight = 150
+        tableView.rowHeight = UITableView.automaticDimension
     }
     
     // MARK: - Table view data source
@@ -49,40 +57,26 @@ class AccountingTableViewController: UITableViewController, MonthsTableViewContr
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "StudentCell", for: indexPath) as! AccountingTableViewCell
         let student = students[indexPath.row]
-        cell.configure(with: student, image: student.imageForCell)
-        
-        // Установка стиля выделения ячейки
+        cell.configure(with: student)
         cell.selectionStyle = .none
-        
         return cell
     }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let monthsVC = MonthsTableViewController()
-        let student = students[indexPath.row]
-        monthsVC.student = student
-        // Создайте строку для представления цены и валюты
-        let lessonPriceString = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
-        monthsVC.lessonPrice = lessonPriceString
-        monthsVC.paidMonths = student.paidMonths
-        monthsVC.selectedYear = student.paidMonths.first?.year ?? ""
-        monthsVC.schedules = student.schedule
-        monthsVC.lessonsForStudent = student.lessons
-        monthsVC.studentType = student.type
-        
-        monthsVC.delegate = self
 
-        
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        navigateToMonthsVC(for: students[indexPath.row])
+    }
+    
+    private func navigateToMonthsVC(for student: Student) {
+        let monthsVC = MonthsTableViewController()
+        monthsVC.student = student
+        monthsVC.studentType = student.type
+        monthsVC.lessonPrice = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
+        monthsVC.schedules = student.schedule
+        monthsVC.delegate = self
         navigationController?.pushViewController(monthsVC, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
-    }
-    
-    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
-        StudentStore.shared.updateStudent(updatedStudent)
-        self.selectedYear = selectedYear
-        tableView.reloadData()
     }
 }

@@ -10,9 +10,15 @@ import UIKit
 extension LessonDetailsViewController {
     
     func setupUI() {
+        
         // Add a button to share homework
         let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareHomework))
-        navigationItem.rightBarButtonItem = shareButton
+        
+        // Create a paperclip button
+        let paperclipButton = UIBarButtonItem(image: UIImage(systemName: "paperclip"), style: .plain, target: self, action: #selector(paperclipButtonTapped))
+        
+        // Set both buttons to the right side of the navigation bar
+        navigationItem.rightBarButtonItems = [shareButton, paperclipButton]
         
         view.addSubview(homeworkTextView)
         

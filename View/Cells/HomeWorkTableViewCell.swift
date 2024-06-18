@@ -15,13 +15,18 @@ extension HomeWorkTableViewCell {
 }
 
 extension HomeWorkTableViewCell {
-    func didUpdateStudentLessons(_ lessons: [String: [Lesson]]) {
+    func didUpdateStudentLessons(_ lessons: [Lesson]) {
         lessonsForStudent = lessons
         innerTableView.reloadData()
     }
 }
 
-class HomeWorkTableViewCell: UITableViewCell, MonthLessonsDelegate {
+class HomeWorkTableViewCell: UITableViewCell, DidUpdateStudentDelegate {
+    func didUpdateStudent(_ student: Student) {
+        StudentStore.shared.updateStudent(student)
+//        tableView.reloadData()
+    }
+    
    
     weak var navigationController: UINavigationController?
     var student: Student?
@@ -30,8 +35,8 @@ class HomeWorkTableViewCell: UITableViewCell, MonthLessonsDelegate {
     }
         var lessonPrice: String = ""
         var selectedYear: String = ""
-        var paidMonths = [PaidMonth]()
-        var lessonsForStudent: [String: [Lesson]] = [:]
+        var paidMonths = [Month]()
+        var lessonsForStudent: [Lesson] = []
 
         var isExpanded: Bool = false {
             didSet {
@@ -134,7 +139,7 @@ class HomeWorkTableViewCell: UITableViewCell, MonthLessonsDelegate {
     func configure(with student: Student, image: UIImage?, isExpanded: Bool, navigationController: UINavigationController?) {
         
         self.student = student
-        self.paidMonths = student.paidMonths
+        self.paidMonths = student.months
         self.navigationController = navigationController
         
         if let profileImage = image {
@@ -176,11 +181,11 @@ extension HomeWorkTableViewCell: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "HomeWorkPaidMonthsCell", for: indexPath) as! HomeWorkPaidMonthsCell
             
             if paidMonths.isEmpty {
-                cell.paidMonthLabel.text = "There are no added Months"
+                cell.monthLabel.text = "There are no added Months"
                 cell.paidStatusLabel.text = ""
             } else {
                 let paidMonth = paidMonths[indexPath.row]
-                cell.configure(with: student!, selectedMonth: paidMonth.month)
+                cell.configure(with: student!, selectedMonth: paidMonth.monthName)
             }
             
             cell.selectionStyle = .none
@@ -194,15 +199,14 @@ extension HomeWorkTableViewCell: UITableViewDelegate, UITableViewDataSource {
         // Создаем новый контроллер для отображения уроков выбранного месяца
         let monthLessonsVC = MonthLessonsViewController()
         
-        let lessonPrice: String = "\(student?.lessonPrice.price ?? "0")"
+        let lessonPrice = student?.lessonPrice.price ?? 0.0
 
         // Передаем объект Student в MonthLessonsViewController
         monthLessonsVC.student = student
         monthLessonsVC.lessonPrice = lessonPrice
-        monthLessonsVC.selectedMonth = selectedMonth.month
-        monthLessonsVC.selectedYear = selectedMonth.year
+//        monthLessonsVC.selectedMonth = selectedMonth.monthName
         monthLessonsVC.selectedSchedules = student?.schedule.map { ($0.weekday, $0.time) } ?? []
-        monthLessonsVC.temporaryLessons = lessonsForStudent
+        monthLessonsVC.lessonsForStudent = lessonsForStudent
         monthLessonsVC.delegate = self
         navigationController?.pushViewController(monthLessonsVC, animated: true)
         

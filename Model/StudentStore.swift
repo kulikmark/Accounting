@@ -10,7 +10,7 @@ import UIKit
 class StudentStore {
     static let shared = StudentStore()
     
-    private(set) var students: [Student] = []
+    /*private(set)*/ var students: [Student] = []
     
     private init() {}
     

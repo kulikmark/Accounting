@@ -14,7 +14,7 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
     var student: Student?
     var selectedMonth: String = ""
     
-    lazy var paidMonthLabel: UILabel = {
+    lazy var monthLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 18)
         label.textColor = .black
@@ -36,7 +36,7 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
         // Устанавливаем фон ячейки на прозрачный
         self.backgroundColor = .clear
         
-        contentView.addSubview(paidMonthLabel)
+        contentView.addSubview(monthLabel)
         contentView.addSubview(paidStatusLabel)
         
         setupConstraints()
@@ -44,14 +44,14 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
     
     func setupConstraints() {
         
-        paidMonthLabel.snp.makeConstraints { make in
+        monthLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(5)
             make.leading.equalToSuperview().offset(25)
         }
         
         paidStatusLabel.snp.makeConstraints { make in
-            make.top.equalTo(paidMonthLabel.snp.bottom).offset(5)
-            make.leading.equalTo(paidMonthLabel)
+            make.top.equalTo(monthLabel.snp.bottom).offset(5)
+            make.leading.equalTo(monthLabel)
         }
     }
     
@@ -59,11 +59,11 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
            self.student = student
            self.selectedMonth = selectedMonth
         
-        if let paidMonth = student.paidMonths.first(where: { $0.month == selectedMonth }) {
-               paidMonthLabel.text = "\(paidMonth.month) \(paidMonth.year)"
-               paidStatusLabel.text = paidMonth.isPaid ? "Paid" : "Not Paid"
+        if let month = student.months.first(where: { $0.monthName == selectedMonth }) {
+               monthLabel.text = "\(month.monthName) \(month.monthYear)"
+               paidStatusLabel.text = month.isPaid ? "Paid" : "Not Paid"
            } else {
-               paidMonthLabel.text = "\(selectedMonth) - No Data"
+               monthLabel.text = "\(selectedMonth) - No Data"
                paidStatusLabel.text = "No Data"
            }
        }

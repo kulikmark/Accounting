@@ -38,7 +38,7 @@ class StudentCardViewController: UIViewController {
         return control
     }()
     
-    var paidMonths = [PaidMonth]()
+    var monthsArray = [Month]()
     
     var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
@@ -205,8 +205,14 @@ class StudentCardViewController: UIViewController {
             return
         }
         
-        let newLessonPrice = LessonPrice(price: String(format: "%.2f", lessonPriceValue), currency: currency)
+        let newLessonPrice = LessonPrice(price: lessonPriceValue, currency: currency)
         
+        // Создание уникального `PaidMonth` с текущей ценой урока и валютой
+        let month = Month(monthName: "", monthYear: ""/* месяц */, isPaid: true, lessonPrice: newLessonPrice, lessons: [])
+           
+           // Добавление нового `PaidMonth` к студенту
+           var updatedMonths = existingStudent?.months ?? []
+        updatedMonths.append(month)
         
         // Check if the selectedSchedules is empty and mode is add
         if selectedSchedules.isEmpty && self.editMode == .add {
@@ -224,15 +230,15 @@ class StudentCardViewController: UIViewController {
         var updatedSchedule: [Schedule] = mode == .add ? selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) } : existingStudent?.schedule ?? []
         
         // Use selectedSchedules only in 'add' mode
-        var updatedPaidMonths = existingStudent?.paidMonths ?? []
-        var updatedLessons = existingStudent?.lessons ?? [:]
+//        var updatedPaidMonths = existingStudent?.paidMonths ?? []
+        var updatedLessons = existingStudent?.lessons ?? []
         
         if mode == .edit {
             updatedSchedule += selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) }
 
             switch existingStudent {
             case .some(let student):
-                updatedPaidMonths = student.paidMonths
+                updatedMonths = student.months
                 updatedLessons = student.lessons
             case .none:
                 break
@@ -244,10 +250,11 @@ class StudentCardViewController: UIViewController {
             id: studentID,
             name: studentName,
             parentName: parentName,
-            phoneNumber: phoneNumber,
-            paidMonths: updatedPaidMonths,
-            lessonPrice: newLessonPrice,
+            phoneNumber: phoneNumber, 
+            month: Month(monthName: "", monthYear: "", isPaid: false, lessonPrice: newLessonPrice, lessons: []),
+            months: updatedMonths,
             lessons: updatedLessons,
+            lessonPrice: newLessonPrice,
             schedule: updatedSchedule,
             type: studentType,
             image: selectedImage ?? existingStudent?.imageForCell
