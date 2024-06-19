@@ -56,12 +56,7 @@ class HomeWorkTableViewController: UITableViewController {
         self.title = "Homeworks List"
         setupStartScreenLabel(with: "Add first student \n\n On the Students screen")
         tableView.register(HomeWorkTableViewCell.self, forCellReuseIdentifier: "HomeWorkTableViewCell")
-        setupTableView()
-    }
-    
-    private func setupTableView() {
-        tableView.estimatedRowHeight = 100
-        tableView.rowHeight = UITableView.automaticDimension
+        tableView.reloadData()
     }
     
     // MARK: - Table view data source
@@ -76,6 +71,7 @@ class HomeWorkTableViewController: UITableViewController {
         let student = students[indexPath.row]
         let isExpanded = expandedIndexPaths.contains(indexPath)
         cell.configure(with: student, image: student.imageForCell, isExpanded: isExpanded, navigationController: navigationController)
+        cell.updateLessonLabels()
         
         cell.selectionStyle = .none
         
@@ -83,7 +79,18 @@ class HomeWorkTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return expandedIndexPaths.contains(indexPath) ? 380 : 100
+        // Если строка развёрнута, устанавливаем большую высоту
+        if expandedIndexPaths.contains(indexPath) {
+            return 380
+        } else {
+            // Используем UITableView.automaticDimension для автоматического вычисления высоты строки
+            return UITableView.automaticDimension
+        }
+    }
+
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        // Устанавливаем приблизительную высоту строки
+        return 100
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -102,7 +109,9 @@ class HomeWorkTableViewController: UITableViewController {
             
             // Reload the cell to update its content without flickering
             if let cell = tableView.cellForRow(at: indexPath) as? HomeWorkTableViewCell {
+               
                 cell.configure(with: cell.student!, image: cell.profileImageView.image, isExpanded: expandedIndexPaths.contains(indexPath), navigationController: navigationController)
+                cell.updateLessonLabels()
             }
     }
 }

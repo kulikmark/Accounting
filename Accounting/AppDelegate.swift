@@ -22,15 +22,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let lessonPrice = LessonPrice(price: 100.0, currency: "GBP")
         
-        let months = [Month(monthName: "June", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: [])]
-////                         PaidMonth(year: "2024", month: "July", isPaid: false, lessonPriceAtPayment: lessonPrice),
-////                         PaidMonth(year: "2024", month: "August", isPaid: false, lessonPriceAtPayment: lessonPrice),
-////                         PaidMonth(year: "2024", month: "September", isPaid: false, lessonPriceAtPayment: lessonPrice),
-////                         PaidMonth(year: "2024", month: "October", isPaid: false, lessonPriceAtPayment: lessonPrice),
-////                         PaidMonth(year: "2024", month: "November", isPaid: false, lessonPriceAtPayment: lessonPrice),
-//                         /*PaidMonth(year: "2024", month: "December", isPaid: false, lessonPriceAtPayment: lessonPrice)*/]
-//        
-//        let lesson = Lesson(date: "2024.06.05", attended: false, homework: "HW")
+        let months = [Month(monthName: "June", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
+        Month(monthName: "July", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
+        Month(monthName: "August", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
+        Month(monthName: "September", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: [])]
+//
+        let lesson = [Lesson(date: "05.06.2024", attended: false, homework: "HW")]
             
             // Создаем тестового ученика с этим расписанием
             let testStudent = Student(
@@ -39,7 +36,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 parentName: "Petunia Dursley",
                 phoneNumber: "+44-7871256566",
                 months: months,
-                lessons: [], lessonPrice: lessonPrice,
+                lessons: lesson,
+                lessonPrice: lessonPrice,
                 schedule: testSchedule1,
                 type: .schoolchild,
                 image: UIImage(named: "harry")?.squareImage()

@@ -16,8 +16,8 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
     
     lazy var monthLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.boldSystemFont(ofSize: 18)
-        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 14)
+        label.textColor = .darkGray
         label.numberOfLines = 1
         return label
     }()
@@ -45,13 +45,12 @@ class HomeWorkPaidMonthsCell: UITableViewCell {
     func setupConstraints() {
         
         monthLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(5)
+            make.centerY.equalToSuperview()
             make.leading.equalToSuperview().offset(25)
         }
-        
         paidStatusLabel.snp.makeConstraints { make in
-            make.top.equalTo(monthLabel.snp.bottom).offset(5)
-            make.leading.equalTo(monthLabel)
+            make.centerY.equalToSuperview()
+            make.trailing.equalToSuperview().offset(-10)
         }
     }
     

@@ -205,8 +205,8 @@ class StudentCardViewController: UIViewController {
         
         let newLessonPrice = LessonPrice(price: lessonPriceValue, currency: currency)
         
-        // Создание уникального `PaidMonth` с текущей ценой урока и валютой
-        let month = Month(monthName: "", monthYear: ""/* месяц */, isPaid: true, lessonPrice: newLessonPrice, lessons: [])
+//        // Создание уникального `PaidMonth` с текущей ценой урока и валютой
+//        let month = Month(monthName: "", monthYear: ""/* месяц */, isPaid: true, lessonPrice: newLessonPrice, lessons: [])
            
            // Добавление нового `PaidMonth` к студенту
            var updatedMonths = existingStudent?.months ?? []

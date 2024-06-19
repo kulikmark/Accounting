@@ -43,16 +43,16 @@ class MonthsTableViewController: UITableViewController, DidUpdateStudentDelegate
         super.viewDidLoad()
         title = "Months list of \(student.name)"
         setupUI()
+        setupTableView()
         setupNavigationBar()
-        tableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
+        tableView.register(MonthCell.self, forCellReuseIdentifier: "MonthCell")
     }
     
     // MARK: - Setup Methods
     
     private func setupTableView() {
         tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.lightGray
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        tableView.separatorColor = UIColor.clear
         tableView.reloadData()
     }
     
@@ -165,8 +165,17 @@ class MonthsTableViewController: UITableViewController, DidUpdateStudentDelegate
         return student?.months.count ?? 0
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+            return UITableView.automaticDimension
+    }
+
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        // Устанавливаем приблизительную высоту строки
+        return 60
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PaidMonthCell", for: indexPath) as! PaidMonthCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthCell
         
         if let month = student?.months[indexPath.row] {
                 cell.configure(with: student!, month: month, index: indexPath.row, target: self, action: #selector(switchValueChanged(_:)))

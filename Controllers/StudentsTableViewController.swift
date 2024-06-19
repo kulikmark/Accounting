@@ -11,8 +11,8 @@ class StudentsTableViewController: UITableViewController {
     
     var student: Student?
     var students: [Student] {
-           return StudentStore.shared.students
-       }
+        return StudentStore.shared.students
+    }
     var selectedYear: String = ""
     
     override func viewDidAppear(_ animated: Bool) {
@@ -22,11 +22,9 @@ class StudentsTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // Скрыть разделители ячеек
-//            tableView.separatorStyle = .none
-//        tableView.separatorStyle = .singleLine
-                tableView.separatorColor = UIColor.clear
+        tableView.separatorStyle = .none
+        tableView.separatorColor = UIColor.clear
         
         view.backgroundColor = UIColor.systemGroupedBackground
         self.title = "Students List"
@@ -35,7 +33,7 @@ class StudentsTableViewController: UITableViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewStudent))
         self.navigationItem.rightBarButtonItem = self.editButtonItem
         
-        self.tableView.estimatedRowHeight = 100
+        self.tableView.estimatedRowHeight = 50
         self.tableView.rowHeight = UITableView.automaticDimension
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
     }
@@ -87,10 +85,10 @@ class StudentsTableViewController: UITableViewController {
     }
     
     func deleteStudent(at indexPath: IndexPath) {
-            StudentStore.shared.removeStudent(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
+        StudentStore.shared.removeStudent(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .fade)
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
-        }
+    }
     
     // MARK: - Actions
     

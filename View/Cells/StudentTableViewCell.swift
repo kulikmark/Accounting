@@ -12,15 +12,18 @@ class StudentTableViewCell: UITableViewCell {
     
     var student: Student?
     
+    let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 10
+        return view
+    }()
+    
     lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 50
         imageView.clipsToBounds = true
-        imageView.layer.shadowColor = UIColor.black.cgColor
-        imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        imageView.layer.shadowOpacity = 0.3
-        imageView.layer.shadowRadius = 4
         return imageView
     }()
     
@@ -58,47 +61,36 @@ class StudentTableViewCell: UITableViewCell {
         return label
     }()
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 5, bottom: 5, right: 5))
-    }
-    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        // Устанавливаем фон ячейки на прозрачный
         self.backgroundColor = .clear
         
-        // Добавляем визуальные эффекты к contentView
-        self.contentView.backgroundColor = .white
-        contentView.layer.cornerRadius = 10
-        contentView.layer.masksToBounds = true
-        contentView.layer.shadowColor = UIColor.black.cgColor
-        contentView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        contentView.layer.shadowOpacity = 0.1
-        contentView.layer.shadowRadius = 4
-        
-        contentView.addSubview(profileImageView)
-        contentView.addSubview(studentNameLabel)
-        contentView.addSubview(phoneNumberLabel)
-        contentView.addSubview(lessonPriceLabel)
-        contentView.addSubview(scheduleLabel)
+        contentView.addSubview(containerView)
+        containerView.addSubview(profileImageView)
+        containerView.addSubview(studentNameLabel)
+        containerView.addSubview(phoneNumberLabel)
+        containerView.addSubview(lessonPriceLabel)
+        containerView.addSubview(scheduleLabel)
         
         setupConstraints()
     }
     
     func setupConstraints() {
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(5)
+        }
+        
         profileImageView.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().offset(10)
+            make.top.leading.equalTo(containerView).offset(10)
             make.width.height.equalTo(100)
-            make.bottom.lessThanOrEqualToSuperview().offset(-10).priority(.medium)
+            make.bottom.lessThanOrEqualTo(containerView).offset(-10).priority(.medium)
         }
         
         studentNameLabel.snp.makeConstraints { make in
             make.top.equalTo(profileImageView)
             make.leading.equalTo(profileImageView.snp.trailing).offset(23)
-            make.trailing.equalToSuperview().offset(-10)
+            make.trailing.equalTo(containerView).offset(-10)
         }
         
         phoneNumberLabel.snp.makeConstraints { make in
@@ -114,19 +106,12 @@ class StudentTableViewCell: UITableViewCell {
         scheduleLabel.snp.makeConstraints { make in
             make.top.equalTo(lessonPriceLabel.snp.bottom).offset(7)
             make.leading.trailing.equalTo(studentNameLabel)
-         
-            /*  Этот код говорит SnapKit установить высоту scheduleLabel равной высоте его родительского представления минус 10 с низким приоритетом.
-            Это позволит scheduleLabel расти по высоте, если его содержимое не помещается внутри contentView,
-            но при этом сохраняет приоритет других ограничений,
-            чтобы не нарушать логику размещения в вашей ячейке. */
-            
-            make.height.equalToSuperview().offset(-10).priority(.low)
-            make.bottom.lessThanOrEqualToSuperview().offset(-10)
+            make.bottom.lessThanOrEqualTo(containerView).offset(-10)
         }
     }
     
     func configure(with student: Student, image: UIImage?) {
-        self.student = student // Установите свойство student
+        self.student = student
         
         if let profileImage = image {
             profileImageView.image = profileImage
@@ -157,7 +142,6 @@ class StudentTableViewCell: UITableViewCell {
         scheduleLabel.text = "Schedule: \(formattedSchedule)"
     }
 
-
     func orderOfDay(_ weekday: String) -> Int {
         switch weekday {
         case "MON": return 0
@@ -167,7 +151,7 @@ class StudentTableViewCell: UITableViewCell {
         case "FRI": return 4
         case "SAT": return 5
         case "SUN": return 6
-        default: return 7 // Для непредвиденных случаев
+        default: return 7
         }
     }
     

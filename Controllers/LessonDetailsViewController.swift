@@ -22,17 +22,31 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
     var updatedlessonsForStudent: [Lesson] = []
     var homeworksArray = [String]()
     
+    var photoImageViews: [UIImageView] = []
+    
     var changesMade = false
     
+    var enterHWLabel: UILabel!
+    var clippedPhotosLabel: UILabel!
     var attendanceSwitch: UISwitch!
     var statusLabel: UILabel!
-    var saveButton: UIButton!
     var paperclipButton = UIButton(type: .system)
+    var saveButton = UIButton(type: .system)
+    
     
     let homeworkTextView: UITextView = {
         let textView = UITextView()
+        textView.backgroundColor = UIColor.systemGroupedBackground
+        textView.layer.cornerRadius = 10
         textView.font = UIFont.systemFont(ofSize: 16)
         return textView
+    }()
+    
+    let photoContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.systemGroupedBackground
+        view.layer.cornerRadius = 10
+        return view
     }()
     
     override func viewWillAppear(_ animated: Bool) {
@@ -56,7 +70,7 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         setupUI()
         setupObservers()
         setupTapGesture()
-       
+        
         // Set the text view with the current homework
         homeworkTextView.text = lesson.homework
         // Устанавливаем значение UISwitch равным значению lesson.attended
@@ -73,15 +87,15 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         
         // Обновляем состояние attended
         lesson.attended = attendanceSwitch.isOn
-        lesson.homework = updatedHomework
+        //        lesson.homework = updatedHomework
+        lesson.homework = updatedHomework.isEmpty ? nil : updatedHomework
         
         // Отправляем уведомление о обновлении урока
         NotificationCenter.default.post(name: .lessonUpdatedNotification, object: nil, userInfo: ["updatedLesson": lesson!])
+        print("Sending lesson update notification for lesson: \(lesson!)")
         
         // Debug output
-           print("Saved lesson details:")
-           print("Attendance: \(attendanceSwitch.isOn ? "Present" : "Absent")")
-           print("Homework: \(updatedHomework)")
+        print ("Saved lesson details Attendance: \(attendanceSwitch.isOn ? "Present" : "Absent") Homework: \(updatedHomework)")
         
         delegate?.didUpdateStudent(student)
         navigationController?.popViewController(animated: true)
@@ -100,7 +114,7 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         lesson?.attended = sender.isOn
         
         // Обновляем текст статуса
-        statusLabel.text = sender.isOn ? "Was present" : "Was absent"
+        statusLabel.text = sender.isOn ? "Student was present" : "Student was absent"
         
         delegate?.didUpdateStudent(student)
         
@@ -160,19 +174,137 @@ extension LessonDetailsViewController {
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectedImage = info[.originalImage] as? UIImage {
-            insertImageIntoTextView(image: selectedImage)
+            addImageForHW(image: selectedImage)
         }
         dismiss(animated: true, completion: nil)
     }
     
-    func insertImageIntoTextView(image: UIImage) {
-        let attachment = NSTextAttachment()
-        attachment.image = image
-        let imageString = NSAttributedString(attachment: attachment)
-        homeworkTextView.textStorage.insert(imageString, at: homeworkTextView.selectedRange.location)
+    func addImageForHW(image: UIImage) {
+        // Создаем UIImageView для фотографии
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 8 // закругленные углы
+        imageView.isUserInteractionEnabled = true
         
+        // Добавляем imageView в массив photoImageViews
+        photoImageViews.append(imageView)
+        
+        // Добавляем imageView в photoContainerView
+        photoContainerView.addSubview(imageView)
+        
+        // Располагаем imageView в контейнере (может потребоваться настроить констрейнты)
+        updatePhotoContainerConstraints()
+        
+        // Добавляем подпись (название фото) под изображением
+        let imageLabel = UILabel()
+        imageLabel.text = "Photo \(photoImageViews.count)" // Пример текста подписи
+        imageLabel.textAlignment = .center
+        imageLabel.font = UIFont.systemFont(ofSize: 12)
+        imageLabel.textColor = .black
+        imageLabel.translatesAutoresizingMaskIntoConstraints = false
+        photoContainerView.addSubview(imageLabel)
+        
+        // Настраиваем констрейнты для imageLabel с использованием SnapKit
+        imageLabel.snp.makeConstraints { make in
+            make.centerX.equalTo(imageView.snp.centerX)
+            make.top.equalTo(imageView.snp.bottom).offset(4)
+        }
+        
+        // Добавляем круглую кнопку удаления (крестик)
+        let deleteButton = UIButton(type: .system)
+        deleteButton.setImage(UIImage(systemName: "trash.circle"), for: .normal)
+        deleteButton.tintColor = .systemRed
+        deleteButton.addTarget(self, action: #selector(deleteImage(_:)), for: .touchUpInside)
+        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addSubview(deleteButton)
+        
+        // Настраиваем констрейнты для deleteButton с использованием SnapKit
+        deleteButton.snp.makeConstraints { make in
+            make.top.equalTo(imageView.snp.top)
+            make.trailing.equalTo(imageView.snp.trailing)
+            make.width.equalTo(20)
+            make.height.equalTo(20)
+        }
+        
+        // Настраиваем жест для открытия фото на весь экран
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:)))
+        imageView.addGestureRecognizer(tapGesture)
+        
+        // Вызываем метод делегата для обновления данных студента
         delegate?.didUpdateStudent(student)
     }
+
+    @objc func deleteImage(_ sender: UIButton) {
+        guard let imageView = sender.superview as? UIImageView else { return }
+        
+        if let index = photoImageViews.firstIndex(of: imageView) {
+            // Удаляем изображение из массива и из контейнера
+            photoImageViews.remove(at: index)
+            imageView.removeFromSuperview()
+            
+            // Обновляем констрейнты контейнера после удаления изображения
+            updatePhotoContainerConstraints()
+            
+            // Обновляем подписи (названия фото) под оставшимися изображениями
+            updateImageLabels()
+        }
+    }
+
+    func updateImageLabels() {
+        // Удаляем старые названия фото
+        photoContainerView.subviews.compactMap { $0 as? UILabel }.forEach { $0.removeFromSuperview() }
+        
+        // Добавляем новые названия фото для оставшихся изображений
+        for (index, imageView) in photoImageViews.enumerated() {
+            let imageLabel = UILabel()
+            imageLabel.text = "Photo \(index + 1)" // Пример текста подписи
+            imageLabel.textAlignment = .center
+            imageLabel.font = UIFont.systemFont(ofSize: 12)
+            imageLabel.textColor = .black
+            imageLabel.translatesAutoresizingMaskIntoConstraints = false
+            photoContainerView.addSubview(imageLabel)
+            
+            // Настраиваем констрейнты для imageLabel с использованием SnapKit
+            imageLabel.snp.makeConstraints { make in
+                make.centerX.equalTo(imageView.snp.centerX)
+                make.top.equalTo(imageView.snp.bottom).offset(4)
+            }
+        }
+        
+        // Обновляем констрейнты контейнера после добавления названий фото
+        updatePhotoContainerConstraints()
+    }
+
+    
+    func updatePhotoContainerConstraints() {
+        // Удаляем старые констрейнты
+        photoContainerView.subviews.forEach { $0.removeFromSuperview() }
+        
+        // Добавляем новые констрейнты для каждого изображения в photoImageViews
+        var previousImageView: UIImageView?
+        for imageView in photoImageViews {
+            photoContainerView.addSubview(imageView)
+            imageView.snp.makeConstraints { make in
+                make.top.equalTo(photoContainerView.snp.top).offset(8)
+                make.leading.equalTo(photoContainerView.snp.leading).offset(8)
+                make.width.height.equalTo(50) // задаем размеры изображения
+                if let previous = previousImageView {
+                    make.leading.equalTo(previous.snp.trailing).offset(8)
+                }
+            }
+            previousImageView = imageView
+        }
+    }
+    
+    
+    @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
+        guard let tappedImageView = gesture.view as? UIImageView else { return }
+        
+        let fullscreenVC = FullscreenImageViewController(image: tappedImageView.image ?? UIImage.studentIcon)
+        present(fullscreenVC, animated: true, completion: nil)
+    }
+    
 }
 
 // MARK: - shareHomework method

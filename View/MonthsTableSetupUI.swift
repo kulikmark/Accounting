@@ -13,7 +13,7 @@ extension MonthsTableViewController {
     
     func setupUI() {
         
-        view.backgroundColor = .white
+        view.backgroundColor = UIColor.systemGroupedBackground
         
         // Add Paid Month Button
         view.addSubview(addPaidMonthButton)
@@ -31,7 +31,7 @@ extension MonthsTableViewController {
         // Настройка таблицы оплаченных месяцев
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
+        tableView.register(MonthCell.self, forCellReuseIdentifier: "MonthCell")
         
     }
 }
