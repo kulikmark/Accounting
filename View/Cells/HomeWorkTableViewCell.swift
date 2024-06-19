@@ -6,25 +6,9 @@
 import UIKit
 import SnapKit
 
-extension HomeWorkTableViewCell {
-    func didUpdateStudent(_ updatedStudent: Student, selectedYear: String) {
-        StudentStore.shared.updateStudent(updatedStudent)
-        self.selectedYear = selectedYear
-        innerTableView.reloadData()
-    }
-}
-
-extension HomeWorkTableViewCell {
-    func didUpdateStudentLessons(_ lessons: [Lesson]) {
-        lessonsForStudent = lessons
-        innerTableView.reloadData()
-    }
-}
-
 class HomeWorkTableViewCell: UITableViewCell, DidUpdateStudentDelegate {
     func didUpdateStudent(_ student: Student) {
         StudentStore.shared.updateStudent(student)
-//        tableView.reloadData()
     }
     
    
@@ -204,7 +188,7 @@ extension HomeWorkTableViewCell: UITableViewDelegate, UITableViewDataSource {
         // Передаем объект Student в MonthLessonsViewController
         monthLessonsVC.student = student
         monthLessonsVC.lessonPrice = lessonPrice
-//        monthLessonsVC.selectedMonth = selectedMonth.monthName
+        monthLessonsVC.selectedMonth = selectedMonth
         monthLessonsVC.selectedSchedules = student?.schedule.map { ($0.weekday, $0.time) } ?? []
         monthLessonsVC.lessonsForStudent = lessonsForStudent
         monthLessonsVC.delegate = self

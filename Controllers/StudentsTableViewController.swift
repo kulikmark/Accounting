@@ -89,7 +89,6 @@ class StudentsTableViewController: UITableViewController {
     func deleteStudent(at indexPath: IndexPath) {
             StudentStore.shared.removeStudent(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
-//            updateStartScreenLabelVisibility()
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
         }
     

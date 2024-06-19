@@ -38,7 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 name: "Harry Potter",
                 parentName: "Petunia Dursley",
                 phoneNumber: "+44-7871256566",
-                month: Month(monthName: "", monthYear: "", isPaid: false, lessonPrice: lessonPrice, lessons: []),
                 months: months,
                 lessons: [], lessonPrice: lessonPrice,
                 schedule: testSchedule1,
@@ -46,19 +45,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 image: UIImage(named: "harry")?.squareImage()
             )
         
-//        // Создаем тестового ученика с этим расписанием
-//        let testStudent2 = Student(
-//            id: UUID(),
-//            name: "Ron Weasley",
-//            parentName: "Molly Weasley",
-//            phoneNumber: "+44-7871234567",
-//            paidMonths: [],
-//            lessons: [], 
-//            lessonPrice: lessonPrice,
-//            schedule: testSchedule2,
-//            type: .schoolchild,
-//            image: UIImage(named: "ron")?.squareImage()
-//        )
+        // Создаем тестового ученика с этим расписанием
+        let testStudent2 = Student(
+            id: UUID(),
+            name: "Ron Weasley",
+            parentName: "Molly Weasley",
+            phoneNumber: "+44-7871234567",
+            months: [],
+            lessons: [],
+            lessonPrice: lessonPrice,
+            schedule: testSchedule1,
+            type: .schoolchild,
+            image: UIImage(named: "ron")?.squareImage()
+        )
 //        
 //        // Создаем тестового ученика с этим расписанием
 //        let testStudent3 = Student(
@@ -76,7 +75,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
         // Добавляем тестового ученика в модель данных
            StudentStore.shared.addStudent(testStudent)
-//        StudentStore.shared.addStudent(testStudent2)
+        StudentStore.shared.addStudent(testStudent2)
 //        StudentStore.shared.addStudent(testStudent3)
         
         // Возвращаемое значение true означает успешное завершение метода didFinishLaunchingWithOptions

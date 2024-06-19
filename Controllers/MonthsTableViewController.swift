@@ -12,7 +12,7 @@ protocol DidUpdateStudentDelegate: AnyObject {
     func didUpdateStudent(_ student: Student)
 }
 
-class MonthsTableViewController: UITableViewController, SaveChangesHandling, DidUpdateStudentDelegate {
+class MonthsTableViewController: UITableViewController, DidUpdateStudentDelegate {
     func didUpdateStudent(_ student: Student) {
         StudentStore.shared.updateStudent(student)
         tableView.reloadData()
@@ -26,7 +26,6 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
     var studentType: StudentType?
     var lessonPrice: String = ""
     var lessonPrices: [String] = []
-    var changesMade = false
     var schedules = [Schedule]()
     var selectedMonth: Month?
     var selectedSchedules = [(weekday: String, time: String)]()
@@ -42,6 +41,7 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Months list of \(student.name)"
         setupUI()
         setupNavigationBar()
         tableView.register(PaidMonthCell.self, forCellReuseIdentifier: "PaidMonthCell")
@@ -60,30 +60,30 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
         navigationItem.leftBarButtonItem = backButton
         
-        let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
-        navigationItem.rightBarButtonItem = saveButton
+//        let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
+//        navigationItem.rightBarButtonItem = saveButton
     }
     
     // MARK: - Button Actions
     
-    @objc internal func saveButtonTapped() {
+//    @objc internal func saveButtonTapped() {
+//        guard let student = student else { return }
+//        delegate?.didUpdateStudent(student)
+//        navigationController?.popViewController(animated: true)
+//    }
+    
+    @objc private func backButtonTapped() {
         guard let student = student else { return }
         delegate?.didUpdateStudent(student)
-        changesMade = false
         navigationController?.popViewController(animated: true)
     }
     
-    @objc private func backButtonTapped() {
-        savingConfirmation()
-    }
-    
-    @objc func addPaidMonthButtonTapped() {
+    @objc func addMonthButtonTapped() {
         guard hasSelectedSchedule() else {
             displayErrorMessage("Add a schedule in the student card")
             return
         }
         showMonthSelection()
-        changesMade = true
     }
     
     // MARK: - Helper Methods
@@ -156,10 +156,6 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
             tableView.insertRows(at: [indexPath], with: .automatic)
             self.tableView.reloadData()
             
-            // Update the student in StudentStore
-            StudentStore.shared.updateStudent(student)
-            
-            changesMade = true
         }
     }
     
@@ -204,7 +200,6 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
         if editingStyle == .delete {
             confirmDeletion(at: indexPath)
         }
-        changesMade = true
     }
     
     private func confirmDeletion(at indexPath: IndexPath) {
@@ -236,7 +231,6 @@ class MonthsTableViewController: UITableViewController, SaveChangesHandling, Did
         let index = sender.tag
         student?.months[index].isPaid = sender.isOn
         tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-        changesMade = true
     }
 }
 

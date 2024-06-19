@@ -270,6 +270,35 @@ extension MonthLessonsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            confirmDeletion(at: indexPath)
+        }
+    }
+    
+    private func confirmDeletion(at indexPath: IndexPath) {
+        let alertController = UIAlertController(title: "Confirm the deletion", message: "Are you sure you want to delete this month?", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            self?.deleteLesson(at: indexPath)
+        }
+        alertController.addAction(deleteAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
+    private func deleteLesson(at indexPath: IndexPath) {
+        selectedMonth.lessons.remove(at: indexPath.row)
+        lessonsForStudent = selectedMonth.lessons
+       
+        delegate?.didUpdateStudent(student)
+        
+        tableView?.deleteRows(at: [indexPath], with: .fade)
+        tableView?.reloadData()
+    }
 }
 
 extension Date {
@@ -362,7 +391,7 @@ extension MonthLessonsViewController {
         let lessonCount = lessonsForSelectedMonth.count
         let lessonPrice: Double
         let currency: String
-        if let month = student.months.first(where: { $0.monthName == student.month.monthName && $0.monthYear == student.month.monthYear }) {
+        if let month = student.months.first(where: { $0.monthName == selectedMonth.monthName && $0.monthYear == selectedMonth.monthYear }) {
             lessonPrice = month.lessonPrice.price
             currency = month.lessonPrice.currency
         } else {

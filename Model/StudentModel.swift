@@ -13,7 +13,6 @@ class Student {
     var parentName: String
     var imageForCell: UIImage?
     var phoneNumber: String
-    var month: Month
     var months: [Month]
     var lessons: [Lesson]
     var lessonPrice: LessonPrice
@@ -24,7 +23,6 @@ class Student {
          name: String,
          parentName: String,
          phoneNumber: String,
-         month: Month,
          months: [Month],
          lessons: [Lesson],
          lessonPrice: LessonPrice,
@@ -37,7 +35,6 @@ class Student {
         self.parentName = parentName
         self.imageForCell = image
         self.phoneNumber = phoneNumber
-        self.month = month
         self.months = months
         self.lessons = lessons
         self.lessonPrice = lessonPrice

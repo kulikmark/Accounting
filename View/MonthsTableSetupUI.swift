@@ -26,7 +26,7 @@ extension MonthsTableViewController {
         addPaidMonthButton.layer.cornerRadius = 10
         addPaidMonthButton.setTitleColor(.white, for: .normal)
         addPaidMonthButton.backgroundColor = .systemBlue
-        addPaidMonthButton.addTarget(self, action: #selector(addPaidMonthButtonTapped), for: .touchUpInside)
+        addPaidMonthButton.addTarget(self, action: #selector(addMonthButtonTapped), for: .touchUpInside)
         
         // Настройка таблицы оплаченных месяцев
         tableView.dataSource = self

@@ -38,8 +38,6 @@ class StudentCardViewController: UIViewController {
         return control
     }()
     
-    var monthsArray = [Month]()
-    
     var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
     
@@ -212,7 +210,7 @@ class StudentCardViewController: UIViewController {
            
            // Добавление нового `PaidMonth` к студенту
            var updatedMonths = existingStudent?.months ?? []
-        updatedMonths.append(month)
+//        updatedMonths.append(month)
         
         // Check if the selectedSchedules is empty and mode is add
         if selectedSchedules.isEmpty && self.editMode == .add {
@@ -251,7 +249,6 @@ class StudentCardViewController: UIViewController {
             name: studentName,
             parentName: parentName,
             phoneNumber: phoneNumber, 
-            month: Month(monthName: "", monthYear: "", isPaid: false, lessonPrice: newLessonPrice, lessons: []),
             months: updatedMonths,
             lessons: updatedLessons,
             lessonPrice: newLessonPrice,
