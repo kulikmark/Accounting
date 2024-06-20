@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import PhotosUI
 
 class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate, SaveChangesHandling {
     
@@ -149,21 +150,32 @@ extension LessonDetailsViewController {
 
 extension LessonDetailsViewController {
     
+//    @objc func paperclipButtonTapped() {
+//        let actionSheet = UIAlertController(title: "Add Photo", message: "Choose a source", preferredStyle: .actionSheet)
+//        
+//        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
+//            self.presentImagePicker(sourceType: .camera)
+//        }))
+//        
+//        actionSheet.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
+//            self.presentImagePicker(sourceType: .photoLibrary)
+//        }))
+//        
+//        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+//        
+//        present(actionSheet, animated: true, completion: nil)
+//    }
+    
     @objc func paperclipButtonTapped() {
-        let actionSheet = UIAlertController(title: "Add Photo", message: "Choose a source", preferredStyle: .actionSheet)
+        var configuration = PHPickerConfiguration()
+        configuration.filter = .images // Фильтр только для изображений
+        configuration.selectionLimit = 0 // 0 означает неограниченное количество выбранных элементов
         
-        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
-            self.presentImagePicker(sourceType: .camera)
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
-            self.presentImagePicker(sourceType: .photoLibrary)
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        present(actionSheet, animated: true, completion: nil)
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = self
+        present(picker, animated: true, completion: nil)
     }
+
     
     func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
@@ -305,12 +317,31 @@ extension LessonDetailsViewController {
         }
     }
 
+//    @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
+//        guard let tappedImageView = gesture.view as? UIImageView else { return }
+//        
+//        let fullscreenVC = FullscreenImageViewController(image: tappedImageView.image ?? UIImage.studentIcon)
+//        present(fullscreenVC, animated: true, completion: nil)
+//    }
+    
     @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
+        print("openFullscreenImage called")
         guard let tappedImageView = gesture.view as? UIImageView else { return }
         
-        let fullscreenVC = FullscreenImageViewController(image: tappedImageView.image ?? UIImage.studentIcon)
+        // Подготавливаем массив изображений для FullscreenImageViewController
+        let images = photoImageViews.compactMap { $0.image }
+        
+        // Получаем индекс выбранного изображения
+        guard let initialIndex = photoImageViews.firstIndex(of: tappedImageView) else { return }
+        
+        // Создаем экземпляр FullscreenImageViewController
+        let fullscreenVC = FullscreenImageViewController(images: images, initialIndex: initialIndex)
+        
+        // Показываем FullscreenImageViewController
         present(fullscreenVC, animated: true, completion: nil)
     }
+
+
     
 }
 
@@ -372,5 +403,26 @@ extension LessonDetailsViewController {
         
         // Возвращаемся на предыдущий экран
         navigationController?.popViewController(animated: true)
+    }
+}
+
+// Расширение для работы с PHPickerViewController (только для iOS 14 и новее)
+@available(iOS 14, *)
+extension LessonDetailsViewController: PHPickerViewControllerDelegate {
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        dismiss(animated: true, completion: nil)
+        
+        for result in results {
+            if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
+                result.itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
+                    if let image = image as? UIImage {
+                        DispatchQueue.main.async {
+                            self.addImageForHW(image: image)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
