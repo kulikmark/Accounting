@@ -191,7 +191,7 @@ extension LessonDetailsViewController {
        }
     
     @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
-        guard let imageView = gesture.view as? UIImageView,
+        guard let imageView = gesture.view,
               let cell = imageView.superview?.superview as? UICollectionViewCell,
               let indexPath = photoCollectionView.indexPath(for: cell) else {
             return
@@ -218,8 +218,8 @@ extension LessonDetailsViewController {
             cell.imageView.image = image
         }
         cell.deleteButton.addTarget(self, action: #selector(deleteImage(_:)), for: .touchUpInside)
-        cell.imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:))))
-        cell.imageView.isUserInteractionEnabled = true
+        cell.containerView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:))))
+        cell.containerView.isUserInteractionEnabled = true
         return cell
     }
 }

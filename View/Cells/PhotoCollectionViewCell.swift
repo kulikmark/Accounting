@@ -6,10 +6,19 @@
 //
 
 import UIKit
+import SnapKit
 
 // MARK: - Custom UICollectionViewCell
 
 class PhotoCollectionViewCell: UICollectionViewCell {
+    
+    let containerView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 8
+        view.clipsToBounds = true
+        view.isUserInteractionEnabled = true
+        return view
+    }()
     
     let imageView: UIImageView = {
         let imageView = UIImageView()
@@ -23,15 +32,20 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     let deleteButton: UIButton = {
         let button = UIButton(type: .system)
         button.tintColor = .red
-        button.setImage(UIImage(systemName: "trash."), for: .normal)
+        button.setImage(UIImage(systemName: "trash"), for: .normal)
         return button
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        contentView.addSubview(imageView)
-        contentView.addSubview(deleteButton)
+        contentView.addSubview(containerView)
+        containerView.addSubview(imageView)
+        containerView.addSubview(deleteButton)
+        
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(5)
+        }
         
         imageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -45,5 +59,12 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        // Выводим размеры imageView в консоль
+        print("ImageView size: \(imageView.frame.size)")
     }
 }

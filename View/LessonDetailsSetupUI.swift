@@ -42,7 +42,7 @@ extension LessonDetailsViewController {
         
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 10
+        layout.minimumInteritemSpacing = 5
         layout.itemSize = CGSize(width: 60, height: 60)
         
         photoCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -89,7 +89,7 @@ extension LessonDetailsViewController {
         photoCollectionView.snp.makeConstraints { make in
             make.top.equalTo(clippedPhotosLabel.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(100)
+            make.height.equalTo(80)
         }
         
         photoCollectionView.layer.cornerRadius = 10

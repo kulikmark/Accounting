@@ -78,7 +78,7 @@ class StudentTableViewCell: UITableViewCell {
     
     func setupConstraints() {
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(5)
+            make.edges.equalToSuperview().inset(3)
         }
         
         profileImageView.snp.makeConstraints { make in

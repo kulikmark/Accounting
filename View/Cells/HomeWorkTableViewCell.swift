@@ -119,7 +119,7 @@ class HomeWorkTableViewCell: UITableViewCell, DidUpdateStudentDelegate {
     
     func setupConstraints() {
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(5)
+            make.edges.equalToSuperview().inset(3)
         }
         
         profileImageView.snp.makeConstraints { make in
@@ -239,6 +239,10 @@ extension HomeWorkTableViewCell: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let months = student?.months, indexPath.row < months.count else {
+               // Handle case where the array is empty or index is out of range
+               return
+           }
         selectedMonth = student?.months[indexPath.row]
         showMonthLessons(for: selectedMonth!)
     }

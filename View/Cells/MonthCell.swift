@@ -73,7 +73,7 @@ class MonthCell: UITableViewCell {
     
     private func setupConstraints() {
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(5)
+            make.edges.equalToSuperview().inset(3)
             make.height.equalTo(70)
         }
         
