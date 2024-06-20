@@ -27,7 +27,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Month(monthName: "August", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
         Month(monthName: "September", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: [])]
 //
-        let lesson = [Lesson(date: "05.06.2024", attended: false, homework: "HW")]
+//        // Создаем массив уроков для конкретного месяца (например, июнь 2024 года)
+//                let lessons = [
+//                    Lesson(date: "05.06.2024", attended: false, homework: "HW", photoUrls: [])
+//                    // Добавьте URL для фотографий, если они есть
+//                ]
             
             // Создаем тестового ученика с этим расписанием
             let testStudent = Student(
@@ -36,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 parentName: "Petunia Dursley",
                 phoneNumber: "+44-7871256566",
                 months: months,
-                lessons: lesson,
+                lessons: [],
                 lessonPrice: lessonPrice,
                 schedule: testSchedule1,
                 type: .schoolchild,

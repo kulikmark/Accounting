@@ -18,6 +18,7 @@ class Student {
     var lessonPrice: LessonPrice
     var schedule: [Schedule]
     var type: StudentType
+    var photoUrls: [URL]
 
     init(id: UUID = UUID(),
          name: String,
@@ -28,7 +29,8 @@ class Student {
          lessonPrice: LessonPrice,
          schedule: [Schedule],
          type: StudentType,
-         image: UIImage? = nil) {
+         image: UIImage? = nil,
+         photoUrls: [URL] = []) {
 
         self.id = id
         self.name = name
@@ -40,6 +42,7 @@ class Student {
         self.lessonPrice = lessonPrice
         self.schedule = schedule
         self.type = type
+        self.photoUrls = photoUrls
     }
 }
 
@@ -69,4 +72,5 @@ struct Lesson: Codable {
     var date: String
     var attended: Bool
     var homework: String?
+    var photoUrls: [URL]
 }

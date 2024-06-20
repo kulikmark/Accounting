@@ -84,7 +84,7 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .white
         
         scrollView.delegate = self
         scrollView.isPagingEnabled = true

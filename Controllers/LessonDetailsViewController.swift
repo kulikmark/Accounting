@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import PhotosUI
 
-class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate, SaveChangesHandling {
+class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate, SaveChangesHandling, UICollectionViewDelegate, UICollectionViewDataSource {
     
     var students: [Student] {
         return StudentStore.shared.students
@@ -24,6 +24,7 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
     var homeworksArray = [String]()
     
     var photoImageViews: [UIImageView] = []
+    var photoCollectionView: UICollectionView!
     
     var changesMade = false
     
@@ -40,28 +41,19 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         textView.backgroundColor = UIColor.systemGroupedBackground
         textView.layer.cornerRadius = 10
         textView.font = UIFont.systemFont(ofSize: 16)
+        textView.textColor = .darkGray
         return textView
-    }()
-    
-    let photoContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.systemGroupedBackground
-        view.layer.cornerRadius = 10
-        return view
     }()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Устанавливаем значение UISwitch равным значению lesson.attended
         attendanceSwitch.isOn = lesson.attended
-        
-        // Убедимся, что значение attendanceSwitch.isOn не изменяется вне метода viewDidLoad()
-        print("Attendance Switch is initially on? \(attendanceSwitch.isOn)")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Lesson Details"
+        self.title = "Lesson \(lesson.date)"
         
         // Заменяем кнопку "Back" на кастомную кнопку
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
@@ -93,13 +85,11 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         
         // Отправляем уведомление о обновлении урока
         NotificationCenter.default.post(name: .lessonUpdatedNotification, object: nil, userInfo: ["updatedLesson": lesson!])
-        print("Sending lesson update notification for lesson: \(lesson!)")
-        
-        // Debug output
-        print ("Saved lesson details Attendance: \(attendanceSwitch.isOn ? "Present" : "Absent") Homework: \(updatedHomework)")
         
         delegate?.didUpdateStudent(student)
         navigationController?.popViewController(animated: true)
+        
+        print("Checking photoImageViews after saveButtonTapped \(photoImageViews)")
     }
     
     @objc private func backButtonTapped() {
@@ -107,42 +97,10 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
     }
     
     @objc func attendanceSwitchValueChanged(_ sender: UISwitch) {
-        
-        // Сохраняем факт изменения состояния UISwitch
         changesMade = true
-        
-        // Обновляем статус урока при изменении значения переключателя
         lesson?.attended = sender.isOn
-        
-        // Обновляем текст статуса
         statusLabel.text = sender.isOn ? "Student was present" : "Student was absent"
-        
         delegate?.didUpdateStudent(student)
-        
-        print("attendanceSwitchValueChanged tapped: \(attendanceSwitch.isOn)")
-    }
-}
-
-// MARK: - Hiding keyboard methods
-
-extension LessonDetailsViewController {
-    
-    func setupObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(textViewDidChange(_:)), name: UITextView.textDidChangeNotification, object: homeworkTextView)
-    }
-    
-    func setupTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tapGesture.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    @objc func textViewDidChange(_ notification: Notification) {
-        changesMade = true
-    }
-    
-    @objc func dismissKeyboard() {
-        view.endEditing(true)
     }
 }
 
@@ -150,23 +108,26 @@ extension LessonDetailsViewController {
 
 extension LessonDetailsViewController {
     
-//    @objc func paperclipButtonTapped() {
-//        let actionSheet = UIAlertController(title: "Add Photo", message: "Choose a source", preferredStyle: .actionSheet)
-//        
-//        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
-//            self.presentImagePicker(sourceType: .camera)
-//        }))
-//        
-//        actionSheet.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
-//            self.presentImagePicker(sourceType: .photoLibrary)
-//        }))
-//        
-//        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-//        
-//        present(actionSheet, animated: true, completion: nil)
-//    }
-    
     @objc func paperclipButtonTapped() {
+        let actionSheet = UIAlertController(title: "Add Photo", message: "Choose a source", preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
+            self.presentCamera()
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
+            self.presentImagePicker(sourceType: .photoLibrary)
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(actionSheet, animated: true, completion: nil)
+    }
+    
+    func presentCamera() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .camera
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
         var configuration = PHPickerConfiguration()
         configuration.filter = .images // Фильтр только для изображений
         configuration.selectionLimit = 0 // 0 означает неограниченное количество выбранных элементов
@@ -174,14 +135,6 @@ extension LessonDetailsViewController {
         let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = self
         present(picker, animated: true, completion: nil)
-    }
-
-    
-    func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
-        let imagePicker = UIImagePickerController()
-        imagePicker.sourceType = sourceType
-        imagePicker.delegate = self
-        present(imagePicker, animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -192,175 +145,105 @@ extension LessonDetailsViewController {
     }
     
     func addImageForHW(image: UIImage) {
-        // Создаем UIImageView для фотографии
-        let imageView = UIImageView(image: image)
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 8 // закругленные углы
-        imageView.isUserInteractionEnabled = true
-        
-        // Добавляем imageView в массив photoImageViews
-        photoImageViews.append(imageView)
-        
-        // Добавляем imageView в photoContainerView
-        photoContainerView.addSubview(imageView)
-        
-        // Располагаем imageView в контейнере (может потребоваться настроить констрейнты)
-        updatePhotoContainerConstraints()
-        
-        // Добавляем подпись (название фото) под изображением
-        let imageLabel = UILabel()
-        imageLabel.text = "Photo \(photoImageViews.count)" // Пример текста подписи
-        imageLabel.textAlignment = .center
-        imageLabel.font = UIFont.systemFont(ofSize: 12)
-        imageLabel.textColor = .darkGray
-        photoContainerView.addSubview(imageLabel)
-        
-        // Настраиваем констрейнты для imageLabel с использованием SnapKit
-        imageLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(imageView.snp.centerX)
-            make.top.equalTo(imageView.snp.bottom).offset(4)
+            print("Current number of images: \(lesson.photoUrls.count)")
+            
+            guard !lesson.photoUrls.contains(where: { $0.path == image.description }) else {
+                let errorAlert = UIAlertController(title: "Error", message: "This photo has already been added.", preferredStyle: .alert)
+                errorAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(errorAlert, animated: true, completion: nil)
+                return
+            }
+            
+            if let imageUrl = saveImageToFileSystem(image: image) {
+                lesson.photoUrls.append(imageUrl)
+                photoCollectionView.reloadData()
+            }
+        }
+    
+    // Метод для сохранения изображения в файловой системе и возврата URL
+    func saveImageToFileSystem(image: UIImage) -> URL? {
+        guard let data = image.jpegData(compressionQuality: 0.8) else {
+            print("Failed to convert image to JPEG data")
+            return nil
         }
         
-        // Добавляем круглую кнопку удаления (крестик)
-        let deleteButton = UIButton(type: .system)
-        deleteButton.setImage(UIImage(systemName: "trash.circle"), for: .normal)
-        deleteButton.tintColor = .systemRed
-        deleteButton.addTarget(self, action: #selector(deleteImage(_:)), for: .touchUpInside)
-        deleteButton.translatesAutoresizingMaskIntoConstraints = false
-        imageView.addSubview(deleteButton)
-        
-        // Настраиваем констрейнты для deleteButton с использованием SnapKit
-        deleteButton.snp.makeConstraints { make in
-            make.top.equalTo(imageView.snp.top)
-            make.trailing.equalTo(imageView.snp.trailing)
-            make.width.equalTo(20)
-            make.height.equalTo(20)
+        do {
+            // Создаем URL для нового файла в директории документов приложения
+            let documentsDirectory = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            let fileUrl = documentsDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+            
+            // Сохраняем данные в файл
+            try data.write(to: fileUrl)
+            
+            return fileUrl // Возвращаем URL сохраненного изображения
+        } catch {
+            print("Error saving image to file system: \(error.localizedDescription)")
+            return nil
         }
-        
-        // Настраиваем жест для открытия фото на весь экран
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:)))
-        imageView.addGestureRecognizer(tapGesture)
-        
-        // Вызываем метод делегата для обновления данных студента
-        delegate?.didUpdateStudent(student)
-        
-        // Обновляем констрейнты контейнера после добавления нового изображения
-            updatePhotoContainerConstraints()
     }
 
     @objc func deleteImage(_ sender: UIButton) {
-        guard let imageView = sender.superview as? UIImageView else { return }
-        
-        if let index = photoImageViews.firstIndex(of: imageView) {
-            // Удаляем изображение из массива и из контейнера
-            photoImageViews.remove(at: index)
-            imageView.removeFromSuperview()
-            
-            // Обновляем констрейнты контейнера после удаления изображения
-            updatePhotoContainerConstraints()
-            
-            // Обновляем подписи (названия фото) под оставшимися изображениями
-            updateImageLabels()
-        }
-    }
-
-    func updateImageLabels() {
-        // Удаляем старые названия фото
-        photoContainerView.subviews.compactMap { $0 as? UILabel }.forEach { $0.removeFromSuperview() }
-        
-        // Добавляем новые названия фото для оставшихся изображений
-        for (index, imageView) in photoImageViews.enumerated() {
-            let imageLabel = UILabel()
-            imageLabel.text = "Photo \(index + 1)" // Пример текста подписи
-            imageLabel.textAlignment = .center
-            imageLabel.font = UIFont.systemFont(ofSize: 12)
-            imageLabel.textColor = .darkGray
-            photoContainerView.addSubview(imageLabel)
-            
-            // Настраиваем констрейнты для imageLabel с использованием SnapKit
-            imageLabel.snp.makeConstraints { make in
-                make.centerX.equalTo(imageView.snp.centerX)
-                make.top.equalTo(imageView.snp.bottom).offset(4)
-            }
-        }
-        
-        // Обновляем констрейнты контейнера после добавления названий фото
-        updatePhotoContainerConstraints()
-    }
-    
-    func updatePhotoContainerConstraints() {
-        // Настраиваем констрейнты для каждого изображения в photoImageViews
-        var previousImageView: UIImageView?
-        for imageView in photoImageViews {
-            photoContainerView.addSubview(imageView)
-            imageView.snp.makeConstraints { make in
-                make.top.equalTo(photoContainerView.snp.top).offset(8)
-                make.width.height.equalTo(50) // задаем размеры изображения
-                if let previous = previousImageView {
-                    make.leading.equalTo(previous.snp.trailing).offset(8)
-                } else {
-                    make.leading.equalTo(photoContainerView.snp.leading).offset(8)
-                }
-            }
-            
-            // Находим соответствующий imageLabel
-            if let imageLabel = photoContainerView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text == imageView.accessibilityIdentifier }) {
-                // Настраиваем констрейнты для imageLabel с использованием SnapKit
-                imageLabel.snp.remakeConstraints { make in
-                    make.centerX.equalTo(imageView.snp.centerX)
-                    make.top.equalTo(imageView.snp.bottom).offset(4)
-                }
-            }
-            
-            previousImageView = imageView
-        }
-    }
-
-//    @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
-//        guard let tappedImageView = gesture.view as? UIImageView else { return }
-//        
-//        let fullscreenVC = FullscreenImageViewController(image: tappedImageView.image ?? UIImage.studentIcon)
-//        present(fullscreenVC, animated: true, completion: nil)
-//    }
+           let point = sender.convert(CGPoint.zero, to: photoCollectionView)
+           guard let indexPath = photoCollectionView.indexPathForItem(at: point) else { return }
+           
+           lesson.photoUrls.remove(at: indexPath.item)
+           photoCollectionView.deleteItems(at: [indexPath])
+       }
     
     @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
-        print("openFullscreenImage called")
-        guard let tappedImageView = gesture.view as? UIImageView else { return }
+        guard let imageView = gesture.view as? UIImageView,
+              let cell = imageView.superview?.superview as? UICollectionViewCell,
+              let indexPath = photoCollectionView.indexPath(for: cell) else {
+            return
+        }
         
-        // Подготавливаем массив изображений для FullscreenImageViewController
-        let images = photoImageViews.compactMap { $0.image }
-        
-        // Получаем индекс выбранного изображения
-        guard let initialIndex = photoImageViews.firstIndex(of: tappedImageView) else { return }
-        
-        // Создаем экземпляр FullscreenImageViewController
-        let fullscreenVC = FullscreenImageViewController(images: images, initialIndex: initialIndex)
-        
-        // Показываем FullscreenImageViewController
+        let images = lesson.photoUrls.compactMap { try? Data(contentsOf: $0) }.compactMap { UIImage(data: $0) }
+        let fullscreenVC = FullscreenImageViewController(images: images, initialIndex: indexPath.item)
         present(fullscreenVC, animated: true, completion: nil)
     }
-
-
-    
 }
 
-// MARK: - shareHomework method
+// MARK: - UICollectionViewDelegate, UICollectionViewDataSource
 
 extension LessonDetailsViewController {
-    @objc func shareHomework() {
-        guard let homework = homeworkTextView.text else { return }
-        let activityViewController = UIActivityViewController(activityItems: [homework], applicationActivities: nil)
-        present(activityViewController, animated: true, completion: nil)
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return lesson.photoUrls.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
+        let imageUrl = lesson.photoUrls[indexPath.item]
+        if let imageData = try? Data(contentsOf: imageUrl),
+           let image = UIImage(data: imageData) {
+            cell.imageView.image = image
+        }
+        cell.deleteButton.addTarget(self, action: #selector(deleteImage(_:)), for: .touchUpInside)
+        cell.imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:))))
+        cell.imageView.isUserInteractionEnabled = true
+        return cell
+    }
+}
+
+// MARK: - Расширение для работы с PHPickerViewController (только для iOS 14 и новее)
+@available(iOS 14, *)
+extension LessonDetailsViewController: PHPickerViewControllerDelegate {
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        dismiss(animated: true, completion: nil)
         
-        // Настройка для iPad
-        if let popoverController = activityViewController.popoverPresentationController {
-            popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.last
-            popoverController.sourceView = self.view // для безопасности, хотя barButtonItem должно быть достаточно
+        for result in results {
+            if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
+                result.itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
+                    if let image = image as? UIImage {
+                        DispatchQueue.main.async {
+                            self.addImageForHW(image: image)
+                        }
+                    }
+                }
+            }
         }
     }
 }
-
 
 // MARK: - Saving Confirmation methods
 
@@ -403,26 +286,5 @@ extension LessonDetailsViewController {
         
         // Возвращаемся на предыдущий экран
         navigationController?.popViewController(animated: true)
-    }
-}
-
-// Расширение для работы с PHPickerViewController (только для iOS 14 и новее)
-@available(iOS 14, *)
-extension LessonDetailsViewController: PHPickerViewControllerDelegate {
-    
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        dismiss(animated: true, completion: nil)
-        
-        for result in results {
-            if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
-                result.itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
-                    if let image = image as? UIImage {
-                        DispatchQueue.main.async {
-                            self.addImageForHW(image: image)
-                        }
-                    }
-                }
-            }
-        }
     }
 }

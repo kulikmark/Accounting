@@ -319,7 +319,7 @@ extension MonthLessonsViewController {
     
     func addLesson(date: String, year: String, month: String, attended: Bool) {
         print("Adding lesson for date: \(date)")
-        let lesson = Lesson(date: date, attended: attended)
+        let lesson = Lesson(date: date, attended: attended, photoUrls: [])
         selectedMonth.lessons.append(lesson)
         lessonsForStudent = selectedMonth.lessons
         delegate?.didUpdateStudent(student)
