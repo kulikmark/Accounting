@@ -95,8 +95,6 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         
         for (index, imageView) in imageViews.enumerated() {
             let scrollViewFrame = CGRect(x: view.frame.width * CGFloat(index), y: 0, width: view.frame.width, height: view.frame.height)
-            let imageViewFrame = CGRect(x: 0, y: 0, width: scrollViewFrame.width, height: scrollViewFrame.height)
-            
             let imageScrollView = UIScrollView(frame: scrollViewFrame)
             imageScrollView.delegate = self
             imageScrollView.minimumZoomScale = 1.0
@@ -104,17 +102,31 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
             imageScrollView.showsVerticalScrollIndicator = false
             imageScrollView.showsHorizontalScrollIndicator = false
             
-            imageView.frame = imageViewFrame
+            imageView.frame = imageScrollView.bounds
+            imageView.contentMode = .scaleAspectFit
             imageView.center = CGPoint(x: imageScrollView.bounds.midX, y: imageScrollView.bounds.midY)
             
             imageScrollView.addSubview(imageView)
             scrollView.addSubview(imageScrollView)
+            
+            // Изменение на двойное нажатие
+            let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTapGesture(_:)))
+            doubleTapGesture.numberOfTapsRequired = 2
+            imageView.addGestureRecognizer(doubleTapGesture)
         }
         
         scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(imageViews.count), height: view.frame.height)
         scrollView.contentOffset = CGPoint(x: view.frame.width * CGFloat(currentIndex), y: 0)
     }
-    
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let newIndex = Int(scrollView.contentOffset.x / scrollView.frame.size.width)
+        if newIndex != currentIndex {
+            currentIndex = newIndex
+            resetZoomForImageScrollViews()
+        }
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
@@ -122,6 +134,10 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         for (index, imageScrollView) in scrollView.subviews.enumerated() {
             if let imageScrollView = imageScrollView as? UIScrollView {
                 imageScrollView.frame = CGRect(x: view.frame.width * CGFloat(index), y: 0, width: view.frame.width, height: view.frame.height)
+                
+                if let imageView = imageScrollView.subviews.first as? UIImageView {
+                    imageView.center = CGPoint(x: imageScrollView.bounds.midX, y: imageScrollView.bounds.midY)
+                }
             }
         }
         
@@ -140,14 +156,14 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
     // MARK: - Gesture Recognizer
     
     @objc func handleDoubleTapGesture(_ gesture: UITapGestureRecognizer) {
-        guard let imageScrollView = gesture.view as? UIScrollView else { return }
-        guard let imageView = imageScrollView.subviews.first as? UIImageView else { return }
+        guard let imageScrollView = gesture.view?.superview as? UIScrollView else { return }
         
-        if imageScrollView.zoomScale == 1.0 {
-            let zoomRect = zoomRectForScale(scale: imageScrollView.maximumZoomScale, center: gesture.location(in: imageView))
+        if imageScrollView.zoomScale == imageScrollView.minimumZoomScale {
+            let location = gesture.location(in: imageScrollView)
+            let zoomRect = zoomRectForScale(scale: imageScrollView.maximumZoomScale, center: location)
             imageScrollView.zoom(to: zoomRect, animated: true)
         } else {
-            imageScrollView.setZoomScale(1.0, animated: true)
+            imageScrollView.setZoomScale(imageScrollView.minimumZoomScale, animated: true)
         }
     }
     
@@ -157,7 +173,11 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         return CGRect(origin: origin, size: size)
     }
     
-        @objc func dismissFullscreenImage(_ sender: UITapGestureRecognizer) {
-            dismiss(animated: true, completion: nil)
+    private func resetZoomForImageScrollViews() {
+        for case let imageScrollView as UIScrollView in scrollView.subviews {
+            imageScrollView.zoomScale = 1.0
         }
+    }
+
 }
+
