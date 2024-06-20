@@ -5,69 +5,19 @@
 //  Created by Марк Кулик on 20.06.2024.
 //
 
-//import UIKit
-//
-//class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
-//    
-//    let scrollView = UIScrollView()
-//    let imageView = UIImageView()
-//    var image: UIImage
-//    
-//    init(image: UIImage) {
-//        self.image = image
-//        super.init(nibName: nil, bundle: nil)
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//    
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        view.backgroundColor = .black
-//        
-//        imageView.image = image
-//        imageView.contentMode = .scaleAspectFit
-//        imageView.clipsToBounds = true
-//        imageView.isUserInteractionEnabled = true
-//        
-//        scrollView.delegate = self
-//        scrollView.minimumZoomScale = 1.0
-//        scrollView.maximumZoomScale = 3.0
-//        scrollView.showsVerticalScrollIndicator = false
-//        scrollView.showsHorizontalScrollIndicator = false
-//        scrollView.addSubview(imageView)
-//        view.addSubview(scrollView)
-//        
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
-//        scrollView.addGestureRecognizer(tapGesture)
-//    }
-//    
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
-//        scrollView.frame = view.bounds
-//        imageView.frame = scrollView.bounds
-//    }
-//    
-//    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-//        return imageView
-//    }
-//    
-//    @objc func dismissFullscreenImage(_ sender: UITapGestureRecognizer) {
-//        dismiss(animated: true, completion: nil)
-//    }
-//}
-
 import UIKit
+import SnapKit
 
 class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
     
     let scrollView = UIScrollView()
     var imageViews: [UIImageView] = []
     var currentIndex: Int = 0
+    let closeButton = UIButton(type: .custom)
     
     init(images: [UIImage], initialIndex: Int) {
         super.init(nibName: nil, bundle: nil)
+        self.modalPresentationStyle = .fullScreen
         self.currentIndex = initialIndex
         for image in images {
             let imageView = UIImageView(image: image)
@@ -86,12 +36,20 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         super.viewDidLoad()
         view.backgroundColor = .white
         
+        // Setup scrollView
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.maximumZoomScale = 3.0
         view.addSubview(scrollView)
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 40)
+        let image = UIImage(systemName: "xmark.circle", withConfiguration: config)
+        closeButton.setImage(image, for: .normal)
+        closeButton.tintColor = .systemGray
+        closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+        view.addSubview(closeButton)
         
         for (index, imageView) in imageViews.enumerated() {
             let scrollViewFrame = CGRect(x: view.frame.width * CGFloat(index), y: 0, width: view.frame.width, height: view.frame.height)
@@ -109,7 +67,7 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
             imageScrollView.addSubview(imageView)
             scrollView.addSubview(imageScrollView)
             
-            // Изменение на двойное нажатие
+            // Double tap gesture
             let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTapGesture(_:)))
             doubleTapGesture.numberOfTapsRequired = 2
             imageView.addGestureRecognizer(doubleTapGesture)
@@ -118,15 +76,7 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(imageViews.count), height: view.frame.height)
         scrollView.contentOffset = CGPoint(x: view.frame.width * CGFloat(currentIndex), y: 0)
     }
-
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        let newIndex = Int(scrollView.contentOffset.x / scrollView.frame.size.width)
-        if newIndex != currentIndex {
-            currentIndex = newIndex
-            resetZoomForImageScrollViews()
-        }
-    }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
@@ -142,6 +92,13 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         }
         
         scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(imageViews.count), height: view.frame.height)
+        
+        // Setup closeButton constraints with SnapKit
+        closeButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.trailing.equalTo(view.snp.trailing).offset(-10)
+            make.width.height.equalTo(30)
+        }
     }
     
     // MARK: - UIScrollViewDelegate
@@ -151,6 +108,14 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
             return imageView
         }
         return nil
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let newIndex = Int(scrollView.contentOffset.x / scrollView.frame.size.width)
+        if newIndex != currentIndex {
+            currentIndex = newIndex
+            resetZoomForImageScrollViews()
+        }
     }
     
     // MARK: - Gesture Recognizer
@@ -167,6 +132,12 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
         }
     }
     
+    @objc func closeButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - Helper Methods
+    
     private func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
         let size = CGSize(width: scrollView.frame.size.width / scale, height: scrollView.frame.size.height / scale)
         let origin = CGPoint(x: center.x - size.width / 2.0, y: center.y - size.height / 2.0)
@@ -178,6 +149,5 @@ class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
             imageScrollView.zoomScale = 1.0
         }
     }
-
 }
 
