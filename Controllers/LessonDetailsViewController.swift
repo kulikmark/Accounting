@@ -201,8 +201,7 @@ extension LessonDetailsViewController {
         imageLabel.text = "Photo \(photoImageViews.count)" // Пример текста подписи
         imageLabel.textAlignment = .center
         imageLabel.font = UIFont.systemFont(ofSize: 12)
-        imageLabel.textColor = .black
-        imageLabel.translatesAutoresizingMaskIntoConstraints = false
+        imageLabel.textColor = .darkGray
         photoContainerView.addSubview(imageLabel)
         
         // Настраиваем констрейнты для imageLabel с использованием SnapKit
@@ -233,6 +232,9 @@ extension LessonDetailsViewController {
         
         // Вызываем метод делегата для обновления данных студента
         delegate?.didUpdateStudent(student)
+        
+        // Обновляем констрейнты контейнера после добавления нового изображения
+            updatePhotoContainerConstraints()
     }
 
     @objc func deleteImage(_ sender: UIButton) {
@@ -261,8 +263,7 @@ extension LessonDetailsViewController {
             imageLabel.text = "Photo \(index + 1)" // Пример текста подписи
             imageLabel.textAlignment = .center
             imageLabel.font = UIFont.systemFont(ofSize: 12)
-            imageLabel.textColor = .black
-            imageLabel.translatesAutoresizingMaskIntoConstraints = false
+            imageLabel.textColor = .darkGray
             photoContainerView.addSubview(imageLabel)
             
             // Настраиваем констрейнты для imageLabel с использованием SnapKit
@@ -275,29 +276,35 @@ extension LessonDetailsViewController {
         // Обновляем констрейнты контейнера после добавления названий фото
         updatePhotoContainerConstraints()
     }
-
     
     func updatePhotoContainerConstraints() {
-        // Удаляем старые констрейнты
-        photoContainerView.subviews.forEach { $0.removeFromSuperview() }
-        
-        // Добавляем новые констрейнты для каждого изображения в photoImageViews
+        // Настраиваем констрейнты для каждого изображения в photoImageViews
         var previousImageView: UIImageView?
         for imageView in photoImageViews {
             photoContainerView.addSubview(imageView)
             imageView.snp.makeConstraints { make in
                 make.top.equalTo(photoContainerView.snp.top).offset(8)
-                make.leading.equalTo(photoContainerView.snp.leading).offset(8)
                 make.width.height.equalTo(50) // задаем размеры изображения
                 if let previous = previousImageView {
                     make.leading.equalTo(previous.snp.trailing).offset(8)
+                } else {
+                    make.leading.equalTo(photoContainerView.snp.leading).offset(8)
                 }
             }
+            
+            // Находим соответствующий imageLabel
+            if let imageLabel = photoContainerView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text == imageView.accessibilityIdentifier }) {
+                // Настраиваем констрейнты для imageLabel с использованием SnapKit
+                imageLabel.snp.remakeConstraints { make in
+                    make.centerX.equalTo(imageView.snp.centerX)
+                    make.top.equalTo(imageView.snp.bottom).offset(4)
+                }
+            }
+            
             previousImageView = imageView
         }
     }
-    
-    
+
     @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
         guard let tappedImageView = gesture.view as? UIImageView else { return }
         
